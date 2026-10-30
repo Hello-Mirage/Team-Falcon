@@ -52,7 +52,7 @@
       --radius-lg: 18px;
     }
 
-    [data-theme="dark"] {
+    :root[data-theme="dark"], [data-theme="dark"] {
       --bg: #0b1120;
       --surface: #131c31;
       --surface-subtle: #1c2844;
@@ -1485,9 +1485,7 @@
         </div>
       </div>
     </section>
-  </main>
 
-  
     <!-- VIEW 4: MISTAKES BANK (REVISIT MISTAKES TO EARN XP) -->
     <section id="view-mistakes" class="view-tab">
       <div class="card">
@@ -1518,6 +1516,7 @@
         </div>
       </div>
     </section>
+  </main>
 
     <!-- INTERACTIVE QUIZ RUNNER MODAL -->
     <div id="quiz-modal-overlay" class="quiz-overlay">
@@ -1716,7 +1715,10 @@
 
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
+      if (document.body) document.body.setAttribute('data-theme', theme);
       localStorage.setItem('quizzy-theme', theme);
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.setAttribute('title', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     }
 
     function toggleTheme() {
@@ -1753,6 +1755,14 @@
 
       if (activeBtn) activeBtn.classList.add('active');
       if (activePanel) activePanel.classList.add('active');
+
+      if (tab === 'mistakes') {
+        loadMistakes();
+      } else if (tab === 'notes') {
+        loadSavedNotes();
+      } else if (tab === 'history') {
+        loadHistory();
+      }
     }
 
     function loadSample(key) {
@@ -2350,7 +2360,6 @@
           user_answer: val,
           rating: rating
         })
-      })
       })
       .then(res => res.json())
       .then(data => {
