@@ -1,14 +1,42 @@
-"""Notes to Quiz Generator - Hack Day Haldia x GRID community.
-Full implementation of Core Requirements + Gamification (Streaks & XP System + Smart Mistakes Retry XP).
+"""Quizzy - Notes to Quiz Generator.
+Full implementation of Core Requirements + Gamification (Streaks & XP System + Smart Mistakes Retry XP)
++ Google AI Studio (Gemini) API Integration with .env configuration and graceful local fallback.
 """
 import os
 import json
 import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, date, timedelta
+
+# Auto-load .env configuration
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+# Fallback .env file loader in case python-dotenv is not installed
+def _load_env_fallback():
+    env_file = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(env_file):
+        try:
+            with open(env_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k, v = k.strip(), v.strip().strip('"').strip("'")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
+_load_env_fallback()
 
 from flask import Flask, jsonify, request, send_from_directory
 from extractor import extract_text_from_file
 from quiz_generator import generate_quiz_from_notes
+from gemini_generator import generate_quiz_with_gemini, is_ai_available, get_ai_status
 
 app = Flask(__name__, static_folder="static")
 DB_PATH = os.path.join(app.root_path, "data.db")
@@ -35,10 +63,21 @@ def db():
 def init_db():
     with db() as conn:
         conn.executescript("""
+            CREATE TABLE IF NOT EXISTS user_profile (
+                id INTEGER PRIMARY KEY,
+                total_xp INTEGER DEFAULT 0,
+                current_streak INTEGER DEFAULT 0,
+                longest_streak INTEGER DEFAULT 0,
+                last_active_date TEXT,
+                mistakes_solved_count INTEGER DEFAULT 0,
+                quizzes_completed INTEGER DEFAULT 0
+            );
+
             CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL,
+                word_count INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -46,44 +85,64 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 note_id INTEGER,
                 title TEXT NOT NULL,
-                question_type TEXT,
-                timer_seconds INTEGER,
+                question_type TEXT DEFAULT 'mixed',
+                timer_seconds INTEGER DEFAULT 30,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+                FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
             );
 
             CREATE TABLE IF NOT EXISTS questions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 quiz_id INTEGER NOT NULL,
-                question_type TEXT,
+                concept TEXT NOT NULL,
+                question_type TEXT NOT NULL,
                 question_text TEXT NOT NULL,
-                options TEXT,
-                correct_answer TEXT,
+                options_json TEXT, -- JSON array of strings
+                correct_answer TEXT NOT NULL,
                 explanation TEXT,
-                topic TEXT,
+                source_sentence TEXT,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS attempts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 quiz_id INTEGER NOT NULL,
-                score REAL,
-                total REAL,
-                time_spent_seconds INTEGER,
-                completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                score INTEGER NOT NULL,
+                total INTEGER NOT NULL,
+                percentage REAL NOT NULL,
+                time_spent_seconds INTEGER DEFAULT 0,
+                xp_earned INTEGER DEFAULT 0,
+                is_retry INTEGER DEFAULT 0,
+                weak_topics_json TEXT, -- JSON array of strings
+                answers_json TEXT, -- detailed breakdown of user submissions
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
             );
 
-            CREATE TABLE IF NOT EXISTS attempt_answers (
+            CREATE TABLE IF NOT EXISTS mistakes_bank (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                attempt_id INTEGER NOT NULL,
+                quiz_id INTEGER NOT NULL,
                 question_id INTEGER NOT NULL,
-                user_answer TEXT,
-                is_correct BOOLEAN,
-                FOREIGN KEY (attempt_id) REFERENCES attempts(id) ON DELETE CASCADE,
-                FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+                concept TEXT NOT NULL,
+                question_type TEXT NOT NULL,
+                question_text TEXT NOT NULL,
+                options_json TEXT,
+                correct_answer TEXT NOT NULL,
+                explanation TEXT,
+                user_wrong_answer TEXT,
+                resolved INTEGER DEFAULT 0,
+                resolved_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
+
+        # Ensure singleton user profile exists
+        profile = conn.execute("SELECT id FROM user_profile WHERE id = 1").fetchone()
+        if not profile:
+            conn.execute("""
+                INSERT INTO user_profile (id, total_xp, current_streak, longest_streak, last_active_date)
+                VALUES (1, 0, 0, 0, NULL)
+            """)
 
 
 init_db()
@@ -137,7 +196,6 @@ def update_gamification(conn, xp_to_add: int) -> dict:
         WHERE id = 1
     """, (total_xp, new_streak, new_longest, today))
 
-    # Calculate user level (100 XP per level)
     level = (total_xp // 100) + 1
     level_progress = total_xp % 100
 
@@ -160,7 +218,14 @@ def home():
 
 @app.get("/api/health")
 def health():
-    return jsonify(ok=True)
+    ai_status = get_ai_status()
+    return jsonify(ok=True, ai=ai_status)
+
+
+@app.get("/api/ai/status")
+def api_ai_status():
+    """Returns Google AI Studio / Gemini configuration status."""
+    return jsonify(ok=True, **get_ai_status())
 
 
 @app.get("/api/profile")
@@ -209,7 +274,7 @@ def ep1_api_notes(**kwargs):
         try:
             with db() as conn:
                 rows = conn.execute(
-                    "SELECT id, title, content, created_at FROM notes ORDER BY created_at DESC, id DESC"
+                    "SELECT id, title, content, word_count, created_at FROM notes ORDER BY created_at DESC, id DESC"
                 ).fetchall()
                 notes = [dict(row) for row in rows]
             return jsonify(ok=True, notes=notes), 200
@@ -233,15 +298,16 @@ def ep1_api_notes(**kwargs):
 
         title = title.strip()
         content = content.strip()
+        word_count = len(content.split())
 
         with db() as conn:
             cursor = conn.execute(
-                "INSERT INTO notes (title, content) VALUES (?, ?)",
-                (title, content)
+                "INSERT INTO notes (title, content, word_count) VALUES (?, ?, ?)",
+                (title, content, word_count)
             )
             note_id = cursor.lastrowid
             row = conn.execute(
-                "SELECT id, title, content, created_at FROM notes WHERE id = ?",
+                "SELECT id, title, content, word_count, created_at FROM notes WHERE id = ?",
                 (note_id,)
             ).fetchone()
             new_note = dict(row)
@@ -253,7 +319,9 @@ def ep1_api_notes(**kwargs):
 
 @app.route("/api/quiz", methods=['POST'])
 def api_quiz():
-    """Generates a quiz from notes content or existing note_id, saves it to SQLite, and returns questions."""
+    """Generates a quiz from notes content or existing note_id, saves it to SQLite, and returns questions.
+    Uses Google AI Studio (Gemini) if configured in .env, with automatic fallback to local rule-based engine.
+    """
     data = request.get_json(silent=True) or {}
     note_id = data.get("note_id")
     title = (data.get("title") or "").strip() or "Custom Study Quiz"
@@ -284,10 +352,38 @@ def api_quiz():
             )
             note_id = cur.lastrowid
 
-        # Generate questions
-        raw_questions = generate_quiz_from_notes(content, title=title, question_type=question_type, count=count)
+        # 1. Attempt AI Generation with Google AI Studio (Gemini) if available
+        raw_questions = None
+        generation_source = "local"
+
+        if is_ai_available():
+            try:
+                raw_questions = generate_quiz_with_gemini(
+                    content,
+                    title=title,
+                    question_type=question_type,
+                    count=count
+                )
+                if raw_questions:
+                    generation_source = "google_ai_studio"
+            except Exception as e:
+                app.logger.warning(f"Google AI Studio generation failed: {e}. Falling back to local engine.")
+
+        # 2. Fallback to local rule-based NLP generator if AI unavailable or returned None
         if not raw_questions:
-            return jsonify(ok=False, error="Could not extract enough concepts to form questions. Try adding more detailed notes or full sentences."), 400
+            raw_questions = generate_quiz_from_notes(
+                content,
+                title=title,
+                question_type=question_type,
+                count=count
+            )
+            generation_source = "local_rule_based"
+
+        if not raw_questions:
+            return jsonify(
+                ok=False,
+                error="Could not extract enough concepts to form questions. Try adding more detailed notes or full sentences."
+            ), 400
 
         # Save quiz to DB
         cur = conn.execute(
@@ -314,7 +410,15 @@ def api_quiz():
                 "explanation": q["explanation"]
             })
 
-    return jsonify(ok=True, quiz_id=quiz_id, title=title, timer_seconds=timer_seconds, questions=saved_questions)
+    return jsonify({
+        "ok": True,
+        "quiz_id": quiz_id,
+        "title": title,
+        "timer_seconds": timer_seconds,
+        "questions": saved_questions,
+        "generation_source": generation_source,
+        "ai_powered": (generation_source == "google_ai_studio")
+    })
 
 
 @app.route("/api/quiz/<int:qid>/submit", methods=['POST'])
