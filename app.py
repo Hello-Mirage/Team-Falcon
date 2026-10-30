@@ -1,6 +1,7 @@
 """Quizzy - Notes to Quiz Generator.
 Full implementation of Core Requirements + Gamification (Streaks & XP System + Smart Mistakes Retry XP)
-+ Google AI Studio (Gemini) API Integration with .env configuration and graceful local fallback.
++ Google AI Studio (Gemini) API Integration with .env configuration and graceful local fallback
++ Flashcards Mode, Spaced Repetition (SM-2), and Shareable Quiz Links.
 """
 import os
 import json
@@ -132,6 +133,9 @@ def init_db():
                 user_wrong_answer TEXT,
                 resolved INTEGER DEFAULT 0,
                 resolved_at TIMESTAMP,
+                interval_days INTEGER DEFAULT 1,
+                ease_factor REAL DEFAULT 2.5,
+                next_review_date TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
@@ -175,11 +179,9 @@ def update_gamification(conn, xp_to_add: int) -> dict:
             streak_bonus_xp = 25  # Daily streak continuation bonus!
             is_new_day = True
         elif diff == 0:
-            # Already active today
             new_streak = current_streak
             is_new_day = False
         else:
-            # Streak broken
             new_streak = 1
             is_new_day = True
 
@@ -317,6 +319,14 @@ def ep1_api_notes(**kwargs):
         return jsonify(ok=False, error=str(e)), 500
 
 
+@app.route("/api/notes/<int:note_id>", methods=['DELETE'])
+def api_delete_note(note_id):
+    """Delete a saved note."""
+    with db() as conn:
+        conn.execute("DELETE FROM notes WHERE id = ?", (note_id,))
+    return jsonify(ok=True)
+
+
 @app.route("/api/quiz", methods=['POST'])
 def api_quiz():
     """Generates a quiz from notes content or existing note_id, saves it to SQLite, and returns questions.
@@ -407,7 +417,9 @@ def api_quiz():
                 "question_type": q["question_type"],
                 "question_text": q["question_text"],
                 "options": q.get("options", []),
-                "explanation": q["explanation"]
+                "correct_answer": q["correct_answer"],
+                "explanation": q["explanation"],
+                "source_sentence": q.get("source_sentence", "")
             })
 
     return jsonify({
@@ -419,6 +431,39 @@ def api_quiz():
         "generation_source": generation_source,
         "ai_powered": (generation_source == "google_ai_studio")
     })
+
+
+@app.route("/api/quiz/<int:qid>", methods=['GET'])
+def api_get_quiz(qid):
+    """Retrieve an existing quiz with all its questions for retaking or shareable quiz link."""
+    with db() as conn:
+        quiz = conn.execute("SELECT * FROM quizzes WHERE id = ?", (qid,)).fetchone()
+        if not quiz:
+            return jsonify(ok=False, error="Quiz not found."), 404
+        
+        q_rows = conn.execute("SELECT * FROM questions WHERE quiz_id = ?", (qid,)).fetchall()
+        questions = []
+        for r in q_rows:
+            questions.append({
+                "id": r["id"],
+                "quiz_id": qid,
+                "concept": r["concept"],
+                "question_type": r["question_type"],
+                "question_text": r["question_text"],
+                "options": json.loads(r["options_json"]) if r["options_json"] else [],
+                "correct_answer": r["correct_answer"],
+                "explanation": r["explanation"],
+                "source_sentence": r["source_sentence"] or ""
+            })
+            
+        return jsonify({
+            "ok": True,
+            "quiz_id": qid,
+            "title": quiz["title"],
+            "timer_seconds": quiz["timer_seconds"],
+            "question_type": quiz["question_type"],
+            "questions": questions
+        })
 
 
 @app.route("/api/quiz/<int:qid>/submit", methods=['POST'])
@@ -515,7 +560,7 @@ def api_quiz_submit(qid):
     })
 
 
-# ---- MISTAKES BANK (REVISIT MISTAKES TO EARN XP) --------------------------
+# ---- MISTAKES BANK & SPACED REPETITION (SM-2) -----------------------------
 @app.get("/api/mistakes")
 def api_mistakes_list():
     """Retrieve all unresolved mistakes for the player to practice and earn XP."""
@@ -537,12 +582,13 @@ def api_mistakes_list():
 
 @app.post("/api/mistakes/resolve")
 def api_mistakes_resolve():
-    """Revisit and solve a previous mistake.
-    Awards +15 XP for every mistake corrected and marks it resolved!
+    """Revisit and solve a previous mistake with SM-2 Spaced Repetition.
+    Awards +10 to +20 XP based on rating ('hard', 'good', 'easy') and marks it resolved!
     """
     data = request.get_json(silent=True) or {}
     mistake_id = data.get("mistake_id")
     user_answer = str(data.get("user_answer", "")).strip()
+    rating = str(data.get("rating", "good")).lower()  # "hard", "good", "easy"
 
     if not mistake_id or not user_answer:
         return jsonify(ok=False, error="mistake_id and user_answer are required."), 400
@@ -556,10 +602,20 @@ def api_mistakes_resolve():
         is_correct = (user_answer.lower() == correct.lower())
 
         if is_correct:
-            # Award +15 XP for correcting mistake
-            xp_reward = 15
+            # SM-2 intervals: Hard -> 1 day, Good -> 3 days, Easy -> 7 days
+            interval_map = {"hard": 1, "good": 3, "easy": 7}
+            interval = interval_map.get(rating, 3)
+            next_review = (date.today() + timedelta(days=interval)).isoformat()
+            
+            xp_map = {"hard": 10, "good": 15, "easy": 20}
+            xp_reward = xp_map.get(rating, 15)
+            
             now = datetime.now().isoformat()
-            conn.execute("UPDATE mistakes_bank SET resolved = 1, resolved_at = ? WHERE id = ?", (now, mistake_id))
+            conn.execute("""
+                UPDATE mistakes_bank 
+                SET resolved = 1, resolved_at = ?, interval_days = ?, next_review_date = ?
+                WHERE id = ?
+            """, (now, interval, next_review, mistake_id))
             conn.execute("UPDATE user_profile SET mistakes_solved_count = mistakes_solved_count + 1 WHERE id = 1")
             
             gamification_info = update_gamification(conn, xp_reward)
@@ -567,8 +623,10 @@ def api_mistakes_resolve():
             return jsonify({
                 "ok": True,
                 "is_correct": True,
-                "message": f"Awesome! Mistake corrected. You earned +{xp_reward} XP!",
+                "message": f"Correct! Mastered with '{rating.capitalize()}' (+{xp_reward} XP). Next review in {interval} days.",
                 "xp_earned": xp_reward,
+                "interval_days": interval,
+                "next_review_date": next_review,
                 "explanation": row["explanation"],
                 "gamification": gamification_info
             })
@@ -576,12 +634,24 @@ def api_mistakes_resolve():
             return jsonify({
                 "ok": True,
                 "is_correct": False,
-                "message": "Not quite right yet. Review the hint and try again!",
+                "message": "Not quite right yet. Review the explanation and try again!",
                 "correct_answer": correct,
                 "explanation": row["explanation"]
             })
 
 
+# ---- FLASHCARD MODE GAMIFICATION XP ---------------------------------------
+@app.post("/api/flashcards/xp")
+def api_flashcards_xp():
+    """Awards XP for active flashcard self-testing."""
+    data = request.get_json(silent=True) or {}
+    xp = int(data.get("xp", 10))
+    with db() as conn:
+        gamification_info = update_gamification(conn, xp)
+    return jsonify(ok=True, xp_earned=xp, gamification=gamification_info)
+
+
+# ---- HISTORY & ATTEMPTS ---------------------------------------------------
 @app.route("/api/history", methods=['GET'])
 def api_history():
     """Returns past attempts, scores, and diagnostics."""
@@ -601,6 +671,14 @@ def api_history():
             history.append(item)
 
         return jsonify(ok=True, history=history)
+
+
+@app.route("/api/history/<int:attempt_id>", methods=['DELETE'])
+def api_delete_history(attempt_id):
+    """Delete a past attempt record."""
+    with db() as conn:
+        conn.execute("DELETE FROM attempts WHERE id = ?", (attempt_id,))
+    return jsonify(ok=True)
 
 
 if __name__ == "__main__":
