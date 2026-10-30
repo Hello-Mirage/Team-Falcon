@@ -29,6 +29,30 @@ Revision is passive. Build an app that turns pasted notes into questions and sho
 - `app.py` - Flask app with a SQLite helper (`db()`, `init_db()`), `/api/health` and TODO endpoint stubs (they return 501 until you implement them)
 - `requirements.txt` - `flask`, `gunicorn`
 
+## Flutter Android App (`quizzy_app`)
+
+Quizzy also includes a mobile Android application built with Flutter that allows you to record speech from your microphone, transcribe it in real time, and generate a quiz using Google AI Studio (Gemini API via your Quizzy backend).
+
+### Features
+- 🎙️ **Live Voice Recording & Transcription**: Tap the mic to record lectures, discussions, or personal notes. Speech is transcribed on-device in real time.
+- ⚡ **Gemini-Powered Quiz Generation**: Transcripts are processed through the Quizzy backend with the `apinew` Gemini API key to produce MCQs and fill-in-the-blank questions.
+- 🎯 **Interactive Quiz Flow**: One question at a time, interactive answer selection, instant green/red feedback with explanations, and concept tags.
+- 🏆 **Scorecard & Weak Topics**: Results screen breaks down score percentage, grade, review list for incorrect questions, and highlights weak concepts.
+- ⚙️ **Configurable Backend**: In-app Settings page lets you plug in your Render deployment URL and test connection with one tap.
+
+### Running the App
+```bash
+cd quizzy_app
+flutter pub get
+flutter run
+```
+
+### Build APK
+```bash
+cd quizzy_app
+flutter build apk --debug
+```
+
 ## Run locally
 ```bash
 pip install -r requirements.txt
