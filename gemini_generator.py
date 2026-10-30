@@ -15,11 +15,14 @@ API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
 def get_api_key() -> str:
-    """Retrieve Google AI Studio / Gemini API key from environment."""
-    return (
-        os.environ.get("GEMINI_API_KEY", "").strip()
-        or os.environ.get("GOOGLE_API_KEY", "").strip()
-    )
+    """Retrieve Google AI Studio / Gemini API key from environment.
+    Supports Render / custom env variable 'apinew', as well as standard GEMINI_API_KEY and GOOGLE_API_KEY.
+    """
+    for key_name in ["apinew", "APINEW", "api_new", "API_NEW", "GEMINI_API_KEY", "GOOGLE_API_KEY"]:
+        val = os.environ.get(key_name, "").strip()
+        if val:
+            return val
+    return ""
 
 
 def get_model() -> str:
@@ -38,9 +41,18 @@ def get_ai_status() -> dict:
     has_key = is_ai_available()
     key = get_api_key()
     key_preview = f"{key[:6]}...{key[-4:]}" if (has_key and len(key) >= 10) else None
+
+    # Identify which variable name provided the key
+    source_var = None
+    for k in ["apinew", "APINEW", "api_new", "API_NEW", "GEMINI_API_KEY", "GOOGLE_API_KEY"]:
+        if os.environ.get(k, "").strip():
+            source_var = k
+            break
+
     return {
         "provider": "Google AI Studio",
         "configured": has_key,
+        "env_var": source_var,
         "model": get_model(),
         "key_preview": key_preview
     }
