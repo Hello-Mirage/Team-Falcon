@@ -1,34 +1,1189 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Notes to Quiz Generator</title>
+  <title>FalconQuiz — Notes to Quiz</title>
+
+  <!-- Google Fonts: Inter & Michroma -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.5; background: #fafafa; color: #1f2933; }
-    header, main { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 0; }
-    h1 { margin: 0; font-size: 1.75rem; }
-    .tag { margin: .25rem 0 0; color: #52606d; }
-    .start { border: 1px solid #cbd2d9; border-radius: 6px; padding: 1rem 1.25rem; background: #fff; }
+    /* Custom Local & Served Fonts */
+    @font-face {
+      font-family: 'Anak Manja';
+      src: local('Anak Manja'),
+           url('/static/fonts/Anak%20Manja.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Michroma';
+      src: local('Michroma'), local('Michroma-Regular'),
+           url('/static/fonts/Michroma-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* COLOR PALETTES */
+    :root, [data-theme="light"] {
+      /* Light Mode Palette: #D8A2A2, #FFDCDC, #FFF9D6, #8EA66B */
+      --bg: #FFF9D6;
+      --surface: #ffffff;
+      --surface-subtle: #FFDCDC;
+      --border: #D8A2A2;
+      --border-subtle: rgba(216, 162, 162, 0.45);
+      --text: #283618;
+      --text-muted: #5e6d4c;
+      --text-subtle: #8a9977;
+      --primary: #8EA66B;
+      --primary-hover: #799157;
+      --primary-fg: #ffffff;
+      --accent-rose: #D8A2A2;
+      --accent-pink: #FFDCDC;
+      --config-bg: #fffbf0;
+      --header-bg: rgba(255, 249, 214, 0.94);
+      --input-bg: #ffffff;
+      --radius: 6px;
+      --radius-lg: 12px;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Mode Palette: #010736, #0D1C42, #22396F, #FCF1D0 */
+      --bg: #010736;
+      --surface: #0D1C42;
+      --surface-subtle: #142757;
+      --border: #22396F;
+      --border-subtle: rgba(34, 57, 111, 0.6);
+      --text: #FCF1D0;
+      --text-muted: #a6b9e0;
+      --text-subtle: #6b82b3;
+      --primary: #FCF1D0;
+      --primary-hover: #ede0b9;
+      --primary-fg: #010736;
+      --accent-rose: #22396F;
+      --accent-pink: #0D1C42;
+      --config-bg: #08122d;
+      --header-bg: rgba(1, 7, 54, 0.94);
+      --input-bg: #050d24;
+      --radius: 6px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Headings with Michroma font */
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Michroma', 'Inter', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    /* Lineart SVG Icons */
+    .icon {
+      width: 1rem;
+      height: 1rem;
+      stroke-width: 1.75;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .icon-sm { width: 0.85rem; height: 0.85rem; }
+    .icon-md { width: 1.25rem; height: 1.25rem; }
+
+    /* Header & Navigation */
+    header {
+      background: var(--header-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .nav-wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .brand-title {
+      font-family: 'Anak Manja', cursive, sans-serif;
+      font-size: 1.35rem;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    .brand-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-weight: 500;
+      background: var(--surface-subtle);
+    }
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+    }
+    .tab-btn {
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: var(--surface-subtle);
+    }
+    .tab-btn.active {
+      color: var(--text);
+      background: var(--surface-subtle);
+      font-weight: 600;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Theme Switcher Toggle */
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-btn:hover {
+      background: var(--surface-subtle);
+    }
+    [data-theme="light"] .theme-icon-sun { display: none; }
+    [data-theme="light"] .theme-icon-moon { display: block; }
+    [data-theme="dark"] .theme-icon-sun { display: block; }
+    [data-theme="dark"] .theme-icon-moon { display: none; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-subtle);
+    }
+    .status-badge.online .status-dot { background: #10b981; }
+    .status-badge.offline .status-dot { background: #ef4444; }
+
+    /* Layout */
+    main {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.25rem 1.25rem 3.5rem;
+    }
+    .hero {
+      margin-bottom: 2rem;
+    }
+    .hero-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+    .hero h1 {
+      font-size: 1.75rem;
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 0.45rem;
+    }
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 640px;
+    }
+
+    /* Cards & Form */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .form-meta { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
+    .input-field, .textarea-field, select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+    }
+    .input-field:focus, .textarea-field:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+    .textarea-field { min-height: 160px; resize: vertical; line-height: 1.55; }
+
+    /* Document Upload Dropzone */
+    .upload-dropzone {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-subtle);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .upload-dropzone:hover, .upload-dropzone.dragover {
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: 0 0 0 2px var(--border-subtle);
+    }
+    .upload-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+    .upload-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .upload-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .upload-sub {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+    .upload-browse {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    .upload-pills {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .format-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      background: var(--surface);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* File Status & Progress Bar */
+    .file-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.85rem;
+      margin-top: 0.6rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .file-info-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .file-status-count {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      background: var(--surface-subtle);
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-clear-file {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      padding: 0.2rem;
+      border-radius: 4px;
+    }
+    .btn-clear-file:hover {
+      color: var(--text);
+      background: var(--surface-subtle);
+    }
+    .upload-spinner {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Sample pills */
+    .samples-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+    .samples-title { font-size: 0.75rem; color: var(--text-muted); margin-right: 0.2rem; }
+    .sample-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.55rem;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text);
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .sample-pill:hover {
+      border-color: var(--border);
+      background: var(--surface);
+    }
+
+    /* Configuration Row */
+    .config-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--config-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+    }
+    .config-col { display: flex; flex-direction: column; gap: 0.35rem; }
+    .config-col label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+    }
+
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .action-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-fg);
+      padding: 0.7rem 1.35rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-outline:hover { background: var(--surface-subtle); }
+
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .feature-card {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .feature-title {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .feature-title .icon { color: var(--text-muted); }
+    .feature-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Views & Empty States */
+    .view-tab { display: none; }
+    .view-tab.active { display: block; }
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      color: var(--text-muted);
+    }
+    .empty-icon {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+    }
+    .empty-state h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .empty-state p { font-size: 0.82rem; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.25rem 1.25rem;
+      background: var(--surface);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 1.4rem; }
+      .card { padding: 1.25rem; }
+      .config-row { grid-template-columns: 1fr; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .btn-primary { justify-content: center; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Minimal Header -->
   <header>
-    <h1>Notes to Quiz Generator</h1>
-    <p class="tag">Paste your notes, get a quiz, then learn from your mistakes.</p>
-  </header>
-  <main id="app">
-    <div class="start">
-      <p id="status">Starting...</p>
-      <p>Replace this with your UI. The core tasks are listed in README.md.</p>
+    <div class="nav-wrap">
+      <a href="#" class="brand" onclick="switchTab('create')">
+        <div class="brand-mark">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <span class="brand-title">FalconQuiz</span>
+        <span class="brand-tag">GRID Hack Day</span>
+      </a>
+
+      <ul class="nav-tabs">
+        <li>
+          <button class="tab-btn active" id="tab-create" onclick="switchTab('create')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Create
+          </button>
+        </li>
+        <li>
+          <button class="tab-btn" id="tab-notes" onclick="switchTab('notes')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            Saved Notes
+          </button>
+        </li>
+        <li>
+          <button class="tab-btn" id="tab-history" onclick="switchTab('history')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            History
+          </button>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Light / Dark Mode Toggle Button -->
+        <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle light or dark theme" title="Toggle theme">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Backend Health Status -->
+        <div class="status-badge" id="backend-status">
+          <span class="status-dot"></span>
+          <span id="status-label">Checking...</span>
+        </div>
+      </div>
     </div>
+  </header>
+
+  <main>
+    <!-- VIEW 1: CREATE QUIZ (LANDING) -->
+    <section id="view-create" class="view-tab active">
+      <div class="hero">
+        <div class="hero-meta">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          Active Recall Generator
+        </div>
+        <h1>Generate Quizzes from Notes</h1>
+        <p>Turn notes, PDF documents, Word files, or Excel spreadsheets into interactive multiple-choice and fill-in-the-blank questions with automated weak topic analysis.</p>
+      </div>
+
+      <!-- Generator Card -->
+      <div class="card">
+        <form id="quiz-form" onsubmit="handleGenerateQuiz(event)">
+          <!-- Topic Title -->
+          <div class="form-group">
+            <div class="form-header">
+              <label for="note-title">Topic Title</label>
+              <span class="form-meta">Optional &bull; Auto-filled from filename</span>
+            </div>
+            <input 
+              type="text" 
+              id="note-title" 
+              class="input-field" 
+              placeholder="e.g. Cellular Respiration and Mitochondria" 
+              maxlength="120"
+            />
+          </div>
+
+          <!-- Document Upload Input (PDF, Word, Excel, Text) -->
+          <div class="form-group">
+            <div class="form-header">
+              <label>Document Upload</label>
+              <span class="form-meta">PDF, Word, or Excel</span>
+            </div>
+
+            <div 
+              class="upload-dropzone" 
+              id="upload-dropzone" 
+              onclick="document.getElementById('file-upload-input').click()"
+            >
+              <input 
+                type="file" 
+                id="file-upload-input" 
+                style="display:none;" 
+                accept=".pdf,.docx,.doc,.xlsx,.xls,.xlsm,.txt,.md,.csv" 
+                onchange="handleFileSelect(event)"
+              />
+              <div class="upload-icon-wrap" id="dropzone-icon">
+                <svg class="icon icon-md" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <div class="upload-text">
+                <span class="upload-title" id="dropzone-title">Drop PDF, Word (.docx), or Excel (.xlsx) file here</span>
+                <span class="upload-sub">or <span class="upload-browse">browse files</span> from your computer</span>
+              </div>
+              <div class="upload-pills">
+                <span class="format-badge">PDF</span>
+                <span class="format-badge">WORD .DOCX</span>
+                <span class="format-badge">EXCEL .XLSX</span>
+                <span class="format-badge">TXT / MD</span>
+              </div>
+            </div>
+
+            <!-- Upload progress & file status badge -->
+            <div class="file-status-bar" id="file-status-bar" style="display: none;">
+              <div class="file-info-left">
+                <svg class="icon icon-sm" id="file-type-icon" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span id="file-status-name">document.pdf</span>
+                <span class="file-status-count" id="file-status-words">0 words</span>
+              </div>
+              <button type="button" class="btn-clear-file" onclick="clearUploadedFile(event)" title="Clear uploaded document">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes Textarea -->
+          <div class="form-group">
+            <div class="form-header">
+              <label for="notes-content">Study Notes / Extracted Content</label>
+              <span class="form-meta" id="word-count">0 words</span>
+            </div>
+            <textarea 
+              id="notes-content" 
+              class="textarea-field" 
+              placeholder="Paste notes, paragraphs, or upload a PDF/Word/Excel file above to auto-extract text..."
+              required
+              oninput="updateWordCount()"
+            ></textarea>
+
+            <!-- Sample notes pills with lineart icons -->
+            <div class="samples-bar">
+              <span class="samples-title">Load sample:</span>
+              <button type="button" class="sample-pill" onclick="loadSample('biology')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Biology
+              </button>
+              <button type="button" class="sample-pill" onclick="loadSample('cs')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                Computer Science
+              </button>
+              <button type="button" class="sample-pill" onclick="loadSample('history')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2l9 5H3l9-5z"></path>
+                </svg>
+                History
+              </button>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="config-row">
+            <div class="config-col">
+              <label for="question-type">Question Format</label>
+              <select id="question-type">
+                <option value="mixed" selected>Mixed (MCQ + Blank)</option>
+                <option value="mcq">MCQ Only</option>
+                <option value="fill_blank">Fill-in-the-Blank Only</option>
+              </select>
+            </div>
+
+            <div class="config-col">
+              <label for="question-count">Question Count</label>
+              <select id="question-count">
+                <option value="5" selected>5 questions</option>
+                <option value="10">10 questions</option>
+                <option value="15">15 questions</option>
+              </select>
+            </div>
+
+            <div class="config-col">
+              <label for="timer-setting">Timer per Question</label>
+              <select id="timer-setting">
+                <option value="30" selected>30 seconds</option>
+                <option value="45">45 seconds</option>
+                <option value="60">60 seconds</option>
+                <option value="0">Untimed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action bar -->
+          <div class="action-bar">
+            <div class="action-note">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Notes and quizzes persist to SQLite automatically.
+            </div>
+            <button type="submit" class="btn-primary" id="btn-generate">
+              <span>Generate Quiz</span>
+              <svg class="icon" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Minimal Features List -->
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-title">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+            Distractor Generation
+          </div>
+          <div class="feature-desc">Forms plausible answer choices based on extracted key concepts across your notes.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Timed Quiz Runner
+          </div>
+          <div class="feature-desc">One question at a time with optional countdown timer and instant explanation feedback.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title">
+            <svg class="icon" viewBox="0 0 24 24">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            Weak Topic Analytics
+          </div>
+          <div class="feature-desc">Summarizes score by topic and flags concepts that require focused review.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title">
+            <svg class="icon" viewBox="0 0 24 24">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            Smart Retry
+          </div>
+          <div class="feature-desc">Targeted repetition allowing you to instantly retake only questions you missed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: SAVED NOTES -->
+    <section id="view-notes" class="view-tab">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.1rem; font-weight: 400;">Saved Notes</h2>
+            <p style="color: var(--text-muted); font-size: 0.825rem;">Notes and concept summaries stored in your database.</p>
+          </div>
+          <button class="btn-outline" onclick="switchTab('create')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Note
+          </button>
+        </div>
+        <div id="saved-notes-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="icon-md" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <h3>No saved notes</h3>
+            <p>Paste notes on the Create tab to generate quizzes and store them here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: QUIZ HISTORY -->
+    <section id="view-history" class="view-tab">
+      <div class="card">
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.1rem; font-weight: 400;">Quiz History</h2>
+          <p style="color: var(--text-muted); font-size: 0.825rem;">Previous quiz attempts, scores, and missed question review.</p>
+        </div>
+        <div id="quiz-history-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="icon-md" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+            </div>
+            <h3>No quiz attempts recorded</h3>
+            <p>Completed quiz results and performance diagnostics will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <!-- Minimal Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>FalconQuiz &bull; Hack Day Haldia x GRID Community</div>
+      <div>Python / Flask / SQLite</div>
+    </div>
+  </footer>
+
   <script>
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then(() => { document.getElementById("status").textContent = "Backend connected."; })
-      .catch(() => { document.getElementById("status").textContent = "Backend not reachable - is app.py running?"; });
+    // Theme Toggle Logic
+    function getStoredTheme() {
+      const stored = localStorage.getItem('falcon-theme');
+      if (stored) return stored;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('falcon-theme', theme);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    // Apply preferred theme on initial load
+    applyTheme(getStoredTheme());
+
+    // Sample datasets for quick testing during hackathon demo
+    const SAMPLES = {
+      biology: {
+        title: "Cellular Respiration and Mitochondria",
+        text: "Mitochondria are membrane-bound cell organelles that generate most of the chemical energy needed to power the biochemical reactions of the cell. Chemical energy produced by the mitochondria is stored in a small molecule called adenosine triphosphate (ATP). The inner mitochondrial membrane contains folds called cristae, which increase the surface area available for chemical reactions. Cellular respiration occurs in three main stages: glycolysis in the cytoplasm, the citric acid cycle (Krebs cycle) in the mitochondrial matrix, and the electron transport chain along the inner membrane. Glycolysis breaks down glucose into pyruvate and produces a net gain of 2 ATP molecules without requiring oxygen."
+      },
+      cs: {
+        title: "Big-O Notation and Fundamental Data Structures",
+        text: "Big-O notation is used in computer science to describe the performance or complexity of an algorithm. An array offers constant time O(1) random access by index, but inserting or deleting an element at an arbitrary position takes O(n) linear time. A linked list consists of nodes where each node contains data and a pointer to the next node. Inserting at the head of a linked list takes O(1) time. A hash table provides average case O(1) time complexity for lookup, insert, and delete operations by computing an index using a hash function. In the worst case due to collisions, hash table operations can degrade to O(n) time. Binary search operates on sorted arrays in logarithmic time O(log n)."
+      },
+      history: {
+        title: "The Industrial Revolution in Great Britain",
+        text: "The Industrial Revolution began in Great Britain during the late 18th century before spreading to other parts of the world. Key innovations transformed manufacturing, notably James Watt's improved steam engine which provided reliable mechanical power independent of flowing water. The textile industry was revolutionized by inventions such as James Hargreaves' Spinning Jenny and Edmund Cartwright's power loom. Coal and iron were vital natural resources that fueled locomotives and steamships. The rapid expansion of factories led to widespread urbanization, creating dense industrial cities like Manchester and Birmingham."
+      }
+    };
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-tab').forEach(p => p.classList.remove('active'));
+
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      const activePanel = document.getElementById(`view-${tab}`);
+
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activePanel) activePanel.classList.add('active');
+    }
+
+    function loadSample(key) {
+      const sample = SAMPLES[key];
+      if (!sample) return;
+      document.getElementById('note-title').value = sample.title;
+      document.getElementById('notes-content').value = sample.text;
+      updateWordCount();
+      clearUploadedFile();
+    }
+
+    function updateWordCount() {
+      const text = document.getElementById('notes-content').value.trim();
+      const words = text ? text.split(/\s+/).length : 0;
+      document.getElementById('word-count').textContent = `${words} word${words === 1 ? '' : 's'}`;
+    }
+
+    function checkHealth() {
+      const statusWrap = document.getElementById('backend-status');
+      const statusLabel = document.getElementById('status-label');
+
+      fetch('/api/health')
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          if (data.ok) {
+            statusWrap.className = 'status-badge online';
+            statusLabel.textContent = 'Connected';
+          } else {
+            throw new Error();
+          }
+        })
+        .catch(() => {
+          statusWrap.className = 'status-badge offline';
+          statusLabel.textContent = 'Offline';
+        });
+    }
+
+    // DOCUMENT UPLOAD HANDLERS (PDF, DOCX, XLSX, TXT)
+    const dropzone = document.getElementById('upload-dropzone');
+    const fileInput = document.getElementById('file-upload-input');
+    const fileStatusBar = document.getElementById('file-status-bar');
+    const fileStatusName = document.getElementById('file-status-name');
+    const fileStatusWords = document.getElementById('file-status-words');
+    const dropzoneTitle = document.getElementById('dropzone-title');
+    const dropzoneIcon = document.getElementById('dropzone-icon');
+
+    // Drag-and-drop events
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files.length > 0) {
+        processUploadedFile(files[0]);
+      }
+    });
+
+    function handleFileSelect(event) {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        processUploadedFile(files[0]);
+      }
+    }
+
+    function processUploadedFile(file) {
+      if (!file) return;
+
+      // Update dropzone UI to uploading state
+      const origTitle = dropzoneTitle.textContent;
+      dropzoneTitle.textContent = `Extracting text from ${file.name}...`;
+      dropzoneIcon.innerHTML = `
+        <svg class="icon icon-md upload-spinner" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10"></path>
+        </svg>
+      `;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) {
+          alert(data.error || 'Failed to extract text from document.');
+          return;
+        }
+
+        // Fill notes content
+        document.getElementById('notes-content').value = data.text;
+        updateWordCount();
+
+        // Auto-fill title if currently empty
+        const titleInput = document.getElementById('note-title');
+        if (!titleInput.value.trim() && data.suggested_title) {
+          titleInput.value = data.suggested_title;
+        }
+
+        // Show file status bar
+        fileStatusName.textContent = data.filename;
+        fileStatusWords.textContent = `${data.word_count} words extracted (${data.file_type.toUpperCase()})`;
+        fileStatusBar.style.display = 'flex';
+      })
+      .catch(err => {
+        console.error('Upload error:', err);
+        alert('Server connection error while extracting file. Make sure app.py is running.');
+      })
+      .finally(() => {
+        dropzoneTitle.textContent = origTitle;
+        dropzoneIcon.innerHTML = `
+          <svg class="icon icon-md" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        `;
+      });
+    }
+
+    function clearUploadedFile(event) {
+      if (event) event.stopPropagation();
+      fileInput.value = '';
+      fileStatusBar.style.display = 'none';
+      fileStatusName.textContent = '';
+      fileStatusWords.textContent = '';
+    }
+
+    function handleGenerateQuiz(event) {
+      event.preventDefault();
+      const title = document.getElementById('note-title').value.trim();
+      const content = document.getElementById('notes-content').value.trim();
+      const questionType = document.getElementById('question-type').value;
+      const count = parseInt(document.getElementById('question-count').value, 10);
+      const timer = parseInt(document.getElementById('timer-setting').value, 10);
+
+      if (!content) {
+        alert('Please paste some notes or upload a document before generating a quiz.');
+        return;
+      }
+
+      console.log('Quiz input:', { title, content, questionType, count, timer });
+    }
+
+    checkHealth();
   </script>
 </body>
 </html>

@@ -3,8 +3,9 @@ import os
 import sqlite3
 
 from flask import Flask, jsonify, request, send_from_directory
+from extractor import extract_text_from_file
 
-app = Flask(__name__, static_folder=None)
+app = Flask(__name__, static_folder="static")
 DB_PATH = os.path.join(app.root_path, "data.db")
 
 
@@ -34,6 +35,19 @@ def home():
 @app.get("/api/health")
 def health():
     return jsonify(ok=True)
+
+
+@app.post("/api/upload")
+def api_upload():
+    if "file" not in request.files:
+        return jsonify(ok=False, error="No file uploaded."), 400
+    file = request.files["file"]
+    if not file or not file.filename:
+        return jsonify(ok=False, error="No file selected."), 400
+
+    result = extract_text_from_file(file, file.filename)
+    status_code = 200 if result.get("ok") else 400
+    return jsonify(result), status_code
 
 
 # ---- TODO(core): fill these in ------------------------------------------
