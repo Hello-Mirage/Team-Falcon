@@ -1853,6 +1853,7 @@
     let timerInterval = null;
     let quizStartTime = null;
     let lastSubmitData = null;
+    let isCurrentQuizRetry = false;
 
     // Load Gamification Profile (Streaks, XP, Level, Unresolved Mistakes)
     function refreshProfile() {
@@ -1969,7 +1970,7 @@
 
       const questions = currentQuizData.questions;
       if (currentQuestionIdx >= questions.length) {
-        finishAndSubmitQuiz();
+        finishAndSubmitQuiz(isCurrentQuizRetry);
         return;
       }
 
@@ -2066,19 +2067,42 @@
         userAnswers[q.id] = userAns;
       }
 
-      // Lock buttons
-      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-      document.getElementById('runner-blank-input').disabled = true;
+      const correctAns = (q.correct_answer || '').trim();
+      const isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+
+      // Highlight MCQ buttons
+      if (q.question_type === 'mcq') {
+        const optContainer = document.getElementById('runner-options');
+        optContainer.querySelectorAll('.option-btn').forEach(b => {
+          b.disabled = true;
+          const bText = b.textContent.trim().toLowerCase();
+          if (bText === correctAns.toLowerCase()) {
+            b.classList.add('correct');
+          } else if (bText === userAns.toLowerCase()) {
+            b.classList.add('incorrect');
+          }
+        });
+      } else {
+        document.getElementById('runner-blank-input').disabled = true;
+      }
 
       // Reveal Instant Explanation Feedback
       const fbBox = document.getElementById('runner-feedback');
       const fbMsg = document.getElementById('feedback-msg');
       const fbExp = document.getElementById('feedback-explanation');
 
-      fbMsg.textContent = timedOut ? 'Time is up! Moving forward.' : 'Answer Recorded!';
-      fbExp.textContent = q.explanation || 'Review the source concept to reinforce your active recall.';
-      fbBox.className = 'feedback-box correct';
       fbBox.style.display = 'block';
+      if (isCorrect) {
+        fbBox.className = 'feedback-box correct';
+        fbMsg.textContent = '✓ Correct!';
+      } else {
+        fbBox.className = 'feedback-box incorrect';
+        fbMsg.innerHTML = timedOut 
+          ? '⏱ Time is up! Correct answer: <strong>' + escapeHtml(correctAns) + '</strong>'
+          : '✗ Incorrect. Correct answer: <strong>' + escapeHtml(correctAns) + '</strong>';
+      }
+
+      fbExp.textContent = q.explanation || 'Review the source concept to reinforce your active recall.';
 
       document.getElementById('btn-submit-answer').style.display = 'none';
       document.getElementById('btn-next-question').style.display = 'inline-flex';
@@ -2170,6 +2194,7 @@
       currentQuizData.questions = retryQuestions;
       currentQuestionIdx = 0;
       userAnswers = {};
+      isCurrentQuizRetry = true;
       quizStartTime = Date.now();
 
       document.getElementById('runner-question-container').style.display = 'block';

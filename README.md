@@ -10,19 +10,19 @@ Hack Day Haldia x GRID community - 6-hour build challenge
 Revision is passive. Build an app that turns pasted notes into questions and shows which topics need more work.
 
 ## Core tasks (must-do)
-- [ ] Paste notes; split them into concepts and key sentences
-- [ ] Generate MCQ and fill-in-the-blank questions with plausible distractors (rules or an AI model)
-- [ ] Quiz flow: one question at a time, timer, instant feedback
-- [ ] Score summary that highlights weak topics
-- [ ] Retry only the questions you got wrong
-- [ ] Persist notes, quizzes and attempts in SQLite (helper already in app.py)
-- [ ] UI to manage saved notes and past quizzes
+- [x] Paste notes; split them into concepts and key sentences
+- [x] Generate MCQ and fill-in-the-blank questions with plausible distractors (rules or an AI model)
+- [x] Quiz flow: one question at a time, timer, instant feedback
+- [x] Score summary that highlights weak topics
+- [x] Retry only the questions you got wrong
+- [x] Persist notes, quizzes and attempts in SQLite (helper already in app.py)
+- [x] UI to manage saved notes and past quizzes
 
 ## Bonus tasks (only after the core works)
-- [ ] Spaced-repetition review queue (SM-2)
-- [ ] Flashcard mode
-- [ ] Upload .txt / .pdf notes
-- [ ] Shareable quiz link
+- [x] Spaced-repetition review queue (SM-2)
+- [x] Flashcard mode
+- [x] Upload .txt / .pdf notes
+- [x] Shareable quiz link
 
 ## What is already here
 - `index.html` - base page that pings `/api/health`
@@ -45,8 +45,8 @@ Any Python host works (for example Render or PythonAnywhere). Start command: `gu
 - Hour 6: deploy, open the Pull Request, submit on the MLH platform (OrganizerHQ)
 
 ## Submission checklist
-- [ ] All core tasks work end to end
-- [ ] Project is deployed and the live link opens
+- [x] All core tasks work end to end
+- [x] Project is deployed and the live link opens
 - [ ] Pull Request created on the Voyage GitHub repository assigned to your team
 - [ ] Project submitted on the MLH platform (OrganizerHQ) - instructions are shared at the start of the event
 
