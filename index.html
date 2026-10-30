@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quizzy — Notes to Quiz</title>
 
-  <!-- Google Fonts: Inter & Michroma -->
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* Custom Local & Served Fonts */
@@ -32,47 +32,45 @@
 
     /* COLOR PALETTES */
     :root, [data-theme="light"] {
-      /* Light Mode Palette: #D8A2A2, #FFDCDC, #FFF9D6, #8EA66B */
-      --bg: #FFF9D6;
+      --bg: #f8fafc;
       --surface: #ffffff;
-      --surface-subtle: #FFDCDC;
-      --border: #D8A2A2;
-      --border-subtle: rgba(216, 162, 162, 0.45);
-      --text: #283618;
-      --text-muted: #5e6d4c;
-      --text-subtle: #8a9977;
-      --primary: #8EA66B;
-      --primary-hover: #799157;
+      --surface-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-subtle: rgba(226, 232, 240, 0.8);
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
       --primary-fg: #ffffff;
-      --accent-rose: #D8A2A2;
-      --accent-pink: #FFDCDC;
-      --config-bg: #fffbf0;
-      --header-bg: rgba(255, 249, 214, 0.94);
+      --accent-rose: #f43f5e;
+      --accent-pink: #fdf2f8;
+      --config-bg: #f8fafc;
+      --header-bg: rgba(255, 255, 255, 0.92);
       --input-bg: #ffffff;
-      --radius: 6px;
-      --radius-lg: 12px;
+      --radius: 10px;
+      --radius-lg: 18px;
     }
 
     [data-theme="dark"] {
-      /* Dark Mode Palette: #010736, #0D1C42, #22396F, #FCF1D0 */
-      --bg: #010736;
-      --surface: #0D1C42;
-      --surface-subtle: #142757;
-      --border: #22396F;
-      --border-subtle: rgba(34, 57, 111, 0.6);
-      --text: #FCF1D0;
-      --text-muted: #a6b9e0;
-      --text-subtle: #6b82b3;
-      --primary: #FCF1D0;
-      --primary-hover: #ede0b9;
-      --primary-fg: #010736;
-      --accent-rose: #22396F;
-      --accent-pink: #0D1C42;
-      --config-bg: #08122d;
-      --header-bg: rgba(1, 7, 54, 0.94);
-      --input-bg: #050d24;
-      --radius: 6px;
-      --radius-lg: 12px;
+      --bg: #0b1120;
+      --surface: #131c31;
+      --surface-subtle: #1c2844;
+      --border: rgba(148, 163, 184, 0.14);
+      --border-subtle: rgba(148, 163, 184, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-fg: #ffffff;
+      --accent-rose: #f43f5e;
+      --accent-pink: #1e1b4b;
+      --config-bg: #0e1628;
+      --header-bg: rgba(11, 17, 32, 0.92);
+      --input-bg: #090e1a;
+      --radius: 10px;
+      --radius-lg: 18px;
     }
 
     * {
@@ -83,19 +81,20 @@
     }
 
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.55;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Headings with Michroma font */
+    /* Headings with Outfit font */
     h1, h2, h3, h4, .font-heading {
-      font-family: 'Michroma', 'Inter', sans-serif;
+      font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
       letter-spacing: -0.02em;
     }
 
@@ -142,10 +141,23 @@
       flex-shrink: 0;
     }
     .brand-title {
-      font-family: 'Anak Manja', cursive, sans-serif;
-      font-size: 1.5rem;
+      font-family: 'Anak Manja', 'Outfit', cursive, sans-serif;
+      font-size: 1.75rem;
       line-height: 1;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    [data-theme="light"] .brand-title {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: none;
     }
     .nav-tabs {
       display: inline-flex;
@@ -272,29 +284,36 @@
       padding: 2.25rem 1.25rem 3.5rem;
     }
     .hero {
-      margin-bottom: 2rem;
+      margin-bottom: 2.25rem;
     }
     .hero-meta {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.72rem;
-      font-weight: 600;
+      gap: 0.45rem;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 0.45rem;
+      letter-spacing: 0.06em;
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+      font-family: 'Outfit', sans-serif;
     }
     .hero h1 {
-      font-size: 1.75rem;
-      font-weight: 400;
-      line-height: 1.3;
-      margin-bottom: 0.45rem;
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+      color: var(--text);
     }
     .hero p {
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: var(--text-muted);
-      max-width: 640px;
+      max-width: 680px;
+      line-height: 1.6;
     }
 
     /* Cards & Form */
@@ -302,7 +321,8 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 1.75rem;
+      padding: 2rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
     .form-group { margin-bottom: 1.25rem; }
     .form-header {
@@ -327,22 +347,22 @@
     }
     .input-field:focus, .textarea-field:focus, select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 1px var(--primary);
+      border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
     }
     .textarea-field { min-height: 160px; resize: vertical; line-height: 1.55; }
 
     /* Document Upload Dropzone */
     .upload-dropzone {
-      border: 1.5px dashed var(--border);
+      border: 2px dashed var(--border);
       border-radius: var(--radius);
       background: var(--surface-subtle);
-      padding: 1.25rem 1rem;
+      padding: 1.75rem 1rem;
       text-align: center;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
       transition: all 0.2s ease;
       user-select: none;
     }
@@ -511,35 +531,45 @@
       gap: 0.4rem;
     }
     .btn-primary {
-      background: var(--primary);
-      color: var(--primary-fg);
-      padding: 0.7rem 1.35rem;
-      font-size: 0.9rem;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #ffffff;
+      padding: 0.75rem 1.6rem;
+      font-size: 0.92rem;
       font-weight: 600;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
+      font-family: 'Outfit', sans-serif;
+      border-radius: 12px;
+      border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .btn-primary:hover {
-      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+      filter: brightness(1.06);
     }
     .btn-outline {
       background: var(--surface);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 0.45rem 0.85rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      border-radius: var(--radius);
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.4rem;
+      transition: all 0.18s ease;
     }
-    .btn-outline:hover { background: var(--surface-subtle); }
+    .btn-outline:hover {
+      background: var(--surface-subtle);
+      border-color: var(--primary);
+    }
 
     /* Features Grid */
     .features {
@@ -940,7 +970,7 @@
     .results-pct {
       font-size: 1.5rem;
       font-weight: 700;
-      font-family: 'Michroma', sans-serif;
+      font-family: 'Outfit', sans-serif;
     }
     .results-xp-banner {
       display: inline-flex;
