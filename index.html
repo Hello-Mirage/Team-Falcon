@@ -117,20 +117,21 @@
     /* Header & Navigation */
     header {
       background: var(--header-bg);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 40;
     }
     .nav-wrap {
-      max-width: 960px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 0.75rem 1.25rem;
+      padding: 0.75rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
+      gap: 1rem;
     }
     .brand {
       display: flex;
@@ -138,99 +139,92 @@
       gap: 0.6rem;
       text-decoration: none;
       color: var(--text);
-    }
-    .brand-mark {
-      width: 28px;
-      height: 28px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--surface);
-      color: var(--text);
+      flex-shrink: 0;
     }
     .brand-title {
       font-family: 'Anak Manja', cursive, sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.5rem;
       line-height: 1;
       letter-spacing: 0.02em;
     }
-    .ai-badge {
-      font-size: 0.68rem;
-      background: rgba(66, 133, 244, 0.15);
-      color: #1a73e8;
-      border: 1px solid rgba(66, 133, 244, 0.35);
-      border-radius: 999px;
-      padding: 0.15rem 0.55rem;
-      margin-left: 0.5rem;
-      font-weight: 600;
-      vertical-align: middle;
+    .nav-tabs {
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-    }
-    .brand-tag {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      padding: 0.1rem 0.45rem;
-      border-radius: 999px;
-      font-weight: 500;
-      background: var(--surface-subtle);
-    }
-    .nav-tabs {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
+      gap: 3px;
       list-style: none;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 3px;
+      border-radius: 10px;
+      flex-shrink: 0;
     }
     .tab-btn {
-      padding: 0.4rem 0.75rem;
-      border-radius: var(--radius);
-      font-size: 0.85rem;
+      height: 34px;
+      padding: 0 0.95rem;
+      border-radius: 7px;
+      font-size: 0.84rem;
       font-weight: 500;
       color: var(--text-muted);
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
+      white-space: nowrap;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
     }
     .tab-btn:hover {
       color: var(--text);
-      background: var(--surface-subtle);
+      background: rgba(125, 125, 125, 0.08);
     }
     .tab-btn.active {
       color: var(--text);
-      background: var(--surface-subtle);
+      background: var(--surface);
       font-weight: 600;
-      border: 1px solid var(--border-subtle);
+      border-color: var(--border-subtle);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
-
+    .mistakes-counter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-left: 2px;
+    }
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      flex-shrink: 0;
     }
-
     /* Theme Switcher Toggle */
     .theme-btn {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border: 1px solid var(--border);
       background: var(--surface);
-      border-radius: var(--radius);
+      border-radius: 999px;
       color: var(--text);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.18s ease;
+      flex-shrink: 0;
     }
     .theme-btn:hover {
       background: var(--surface-subtle);
+      transform: rotate(15deg);
     }
     [data-theme="light"] .theme-icon-sun { display: none; }
     [data-theme="light"] .theme-icon-moon { display: block; }
@@ -240,27 +234,39 @@
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
+      gap: 0.45rem;
+      font-size: 0.74rem;
+      font-weight: 500;
       color: var(--text-muted);
-      padding: 0.25rem 0.6rem;
+      padding: 0 0.75rem;
+      height: 34px;
       border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--surface);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .status-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--text-subtle);
+      display: inline-block;
+      flex-shrink: 0;
     }
-    .status-badge.online .status-dot { background: #10b981; }
-    .status-badge.offline .status-dot { background: #ef4444; }
+    .status-badge.online .status-dot {
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    .status-badge.offline .status-dot {
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
 
     /* Layout */
     main {
       flex: 1;
-      max-width: 960px;
+      max-width: 1120px;
       width: 100%;
       margin: 0 auto;
       padding: 2.25rem 1.25rem 3.5rem;
@@ -590,43 +596,68 @@
     .empty-state p { font-size: 0.82rem; }
 
     
-    /* GAMIFICATION: Streak & XP Badges */
+    /* GAMIFICATION: Sleek Unified HUD Pill */
     .gamify-hud {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 3px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 3px;
+      border-radius: 999px;
+      height: 34px;
     }
     .hud-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.78rem;
+      padding: 0 0.65rem;
+      height: 28px;
+      border-radius: 999px;
+      font-size: 0.76rem;
       font-weight: 600;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
+      user-select: none;
+      cursor: default;
     }
-    .hud-badge:hover {
-      transform: translateY(-1px);
+    .hud-badge .icon {
+      width: 0.85rem;
+      height: 0.85rem;
     }
     .hud-streak {
-      color: #e65100;
-      border-color: #ffb74d;
-      background: rgba(255, 183, 77, 0.15);
+      color: #ea580c;
+      background: rgba(234, 88, 12, 0.08);
+    }
+    [data-theme="dark"] .hud-streak {
+      color: #fb923c;
+      background: rgba(251, 146, 60, 0.12);
+    }
+    .hud-streak:hover {
+      background: rgba(234, 88, 12, 0.16);
     }
     .hud-xp {
-      color: #2e7d32;
-      border-color: #81c784;
-      background: rgba(129, 199, 132, 0.15);
+      color: #16a34a;
+      background: rgba(22, 163, 74, 0.08);
+    }
+    [data-theme="dark"] .hud-xp {
+      color: #4ade80;
+      background: rgba(74, 222, 128, 0.12);
+    }
+    .hud-xp:hover {
+      background: rgba(22, 163, 74, 0.16);
     }
     .hud-level {
-      color: #1565c0;
-      border-color: #90caf9;
-      background: rgba(144, 202, 249, 0.15);
+      color: #2563eb;
+      background: rgba(37, 99, 235, 0.08);
+    }
+    [data-theme="dark"] .hud-level {
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.12);
+    }
+    .hud-level:hover {
+      background: rgba(37, 99, 235, 0.16);
     }
 
     /* Option button states & feedback */
@@ -1013,6 +1044,20 @@
       gap: 0.5rem;
     }
 
+    @media (max-width: 880px) {
+      .nav-wrap {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+      }
+      .nav-tabs {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        overflow-x: auto;
+      }
+    }
+
     @media (max-width: 640px) {
       .hero h1 { font-size: 1.4rem; }
       .card { padding: 1.25rem; }
@@ -1076,20 +1121,24 @@
                 <!-- Gamification HUD: Streaks, XP, Level -->
         <div class="gamify-hud">
           <div class="hud-badge hud-streak" id="badge-streak" title="Daily Quiz Streak: Take daily quizzes to maintain your streak!">
-            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="#e65100">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
             </svg>
             <span id="hud-streak-count">0d Streak</span>
           </div>
 
           <div class="hud-badge hud-xp" id="badge-xp" title="Total XP Earned">
-            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="#2e7d32">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             <span id="hud-xp-count">0 XP</span>
           </div>
 
           <div class="hud-badge hud-level" id="badge-level" title="Your Study Rank">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="6"></circle>
+              <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path>
+            </svg>
             <span id="hud-level-count">Lv 1</span>
           </div>
         </div>
