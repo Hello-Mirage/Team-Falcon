@@ -4,7 +4,7 @@ Full implementation of Core Requirements + Gamification (Streaks & XP System + S
 import os
 import json
 import sqlite3
-from datetime import datetime, date, timedelta
+from contextlib import contextmanager
 
 from flask import Flask, jsonify, request, send_from_directory
 from extractor import extract_text_from_file
@@ -14,31 +14,31 @@ app = Flask(__name__, static_folder="static")
 DB_PATH = os.path.join(app.root_path, "data.db")
 
 
+@contextmanager
 def db():
-    """SQLite connection whose rows behave like dicts. Use: with db() as conn: ..."""
+    """SQLite connection generator with auto-commit, rollback on error, and proper close.
+    Use: with db() as conn: ...
+    """
     conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def init_db():
     with db() as conn:
         conn.executescript("""
-            CREATE TABLE IF NOT EXISTS user_profile (
-                id INTEGER PRIMARY KEY,
-                total_xp INTEGER DEFAULT 0,
-                current_streak INTEGER DEFAULT 0,
-                longest_streak INTEGER DEFAULT 0,
-                last_active_date TEXT,
-                mistakes_solved_count INTEGER DEFAULT 0,
-                quizzes_completed INTEGER DEFAULT 0
-            );
-
             CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL,
-                word_count INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -46,64 +46,44 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 note_id INTEGER,
                 title TEXT NOT NULL,
-                question_type TEXT DEFAULT 'mixed',
-                timer_seconds INTEGER DEFAULT 30,
+                question_type TEXT,
+                timer_seconds INTEGER,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
+                FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS questions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 quiz_id INTEGER NOT NULL,
-                concept TEXT NOT NULL,
-                question_type TEXT NOT NULL,
+                question_type TEXT,
                 question_text TEXT NOT NULL,
-                options_json TEXT, -- JSON array of strings
-                correct_answer TEXT NOT NULL,
+                options TEXT,
+                correct_answer TEXT,
                 explanation TEXT,
-                source_sentence TEXT,
+                topic TEXT,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS attempts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 quiz_id INTEGER NOT NULL,
-                score INTEGER NOT NULL,
-                total INTEGER NOT NULL,
-                percentage REAL NOT NULL,
-                time_spent_seconds INTEGER DEFAULT 0,
-                xp_earned INTEGER DEFAULT 0,
-                is_retry INTEGER DEFAULT 0,
-                weak_topics_json TEXT, -- JSON array of strings
-                answers_json TEXT, -- detailed breakdown of user submissions
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                score REAL,
+                total REAL,
+                time_spent_seconds INTEGER,
+                completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
             );
 
-            CREATE TABLE IF NOT EXISTS mistakes_bank (
+            CREATE TABLE IF NOT EXISTS attempt_answers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                quiz_id INTEGER NOT NULL,
+                attempt_id INTEGER NOT NULL,
                 question_id INTEGER NOT NULL,
-                concept TEXT NOT NULL,
-                question_type TEXT NOT NULL,
-                question_text TEXT NOT NULL,
-                options_json TEXT,
-                correct_answer TEXT NOT NULL,
-                explanation TEXT,
-                user_wrong_answer TEXT,
-                resolved INTEGER DEFAULT 0,
-                resolved_at TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                user_answer TEXT,
+                is_correct BOOLEAN,
+                FOREIGN KEY (attempt_id) REFERENCES attempts(id) ON DELETE CASCADE,
+                FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
             );
         """)
-
-        # Ensure singleton user profile exists
-        profile = conn.execute("SELECT id FROM user_profile WHERE id = 1").fetchone()
-        if not profile:
-            conn.execute("""
-                INSERT INTO user_profile (id, total_xp, current_streak, longest_streak, last_active_date)
-                VALUES (1, 0, 0, 0, NULL)
-            """)
 
 
 init_db()
@@ -224,31 +204,51 @@ def api_upload():
 
 
 @app.route("/api/notes", methods=['GET', 'POST'])
-def api_notes():
-    if request.method == 'GET':
-        with db() as conn:
-            rows = conn.execute("SELECT * FROM notes ORDER BY id DESC").fetchall()
-            notes = [dict(r) for r in rows]
-            return jsonify(ok=True, notes=notes)
-            
+def ep1_api_notes(**kwargs):
+    if request.method == "GET":
+        try:
+            with db() as conn:
+                rows = conn.execute(
+                    "SELECT id, title, content, created_at FROM notes ORDER BY created_at DESC, id DESC"
+                ).fetchall()
+                notes = [dict(row) for row in rows]
+            return jsonify(ok=True, notes=notes), 200
+        except Exception as e:
+            return jsonify(ok=False, error=str(e)), 500
+
     # POST
-    data = request.get_json(silent=True) or {}
-    title = data.get("title", "").strip() or "Untitled Study Notes"
-    content = data.get("content", "").strip()
-    
-    if not content:
-        return jsonify(ok=False, error="Note content cannot be empty."), 400
-        
-    words = len(content.split())
-    with db() as conn:
-        cur = conn.execute(
-            "INSERT INTO notes (title, content, word_count) VALUES (?, ?, ?)",
-            (title, content, words)
-        )
-        note_id = cur.lastrowid
-        note = conn.execute("SELECT * FROM notes WHERE id = ?", (note_id,)).fetchone()
-        
-    return jsonify(ok=True, note=dict(note))
+    try:
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify(ok=False, error="Invalid JSON payload. Expected a JSON object."), 400
+
+        title = data.get("title")
+        content = data.get("content")
+
+        if not title or not isinstance(title, str) or not title.strip():
+            return jsonify(ok=False, error="Title is required and cannot be empty."), 400
+
+        if not content or not isinstance(content, str) or not content.strip():
+            return jsonify(ok=False, error="Content is required and cannot be empty."), 400
+
+        title = title.strip()
+        content = content.strip()
+
+        with db() as conn:
+            cursor = conn.execute(
+                "INSERT INTO notes (title, content) VALUES (?, ?)",
+                (title, content)
+            )
+            note_id = cursor.lastrowid
+            row = conn.execute(
+                "SELECT id, title, content, created_at FROM notes WHERE id = ?",
+                (note_id,)
+            ).fetchone()
+            new_note = dict(row)
+
+        return jsonify(ok=True, note=new_note), 201
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)), 500
 
 
 @app.route("/api/quiz", methods=['POST'])
