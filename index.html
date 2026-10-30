@@ -575,6 +575,349 @@
     .empty-state h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
     .empty-state p { font-size: 0.82rem; }
 
+    
+    /* GAMIFICATION: Streak & XP Badges */
+    .gamify-hud {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .hud-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .hud-badge:hover {
+      transform: translateY(-1px);
+    }
+    .hud-streak {
+      color: #e65100;
+      border-color: #ffb74d;
+      background: rgba(255, 183, 77, 0.15);
+    }
+    .hud-xp {
+      color: #2e7d32;
+      border-color: #81c784;
+      background: rgba(129, 199, 132, 0.15);
+    }
+    .hud-level {
+      color: #1565c0;
+      border-color: #90caf9;
+      background: rgba(144, 202, 249, 0.15);
+    }
+
+    /* Mistakes Badge in Nav */
+    .mistakes-counter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #d32f2f;
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 9999px;
+      margin-left: 0.35rem;
+      font-weight: 700;
+    }
+
+    /* Modal / Runner Overlay */
+    .quiz-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .quiz-overlay.active {
+      display: flex;
+    }
+    .quiz-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+    .modal-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0.25rem;
+    }
+    .modal-close-btn:hover {
+      color: var(--text);
+    }
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    /* Progress & Timer Bar */
+    .quiz-progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-subtle);
+      position: relative;
+    }
+    .quiz-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .timer-badge.urgent {
+      background: rgba(220, 53, 69, 0.15);
+      border-color: #dc3545;
+      color: #dc3545;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    /* Question UI */
+    .question-stem {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+      white-space: pre-line;
+    }
+    .concept-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Option choices */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+    }
+    .option-btn {
+      display: flex;
+      align-items: center;
+      text-align: left;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: var(--radius);
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .option-btn:hover:not(:disabled) {
+      background: var(--surface-subtle);
+      border-color: var(--primary);
+    }
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: rgba(142, 166, 107, 0.15);
+      font-weight: 600;
+    }
+    .option-btn.correct {
+      border-color: #2e7d32 !important;
+      background: rgba(46, 125, 50, 0.15) !important;
+      color: #2e7d32 !important;
+    }
+    .option-btn.wrong {
+      border-color: #d32f2f !important;
+      background: rgba(211, 47, 47, 0.15) !important;
+      color: #d32f2f !important;
+    }
+
+    /* Fill blank input */
+    .blank-input-wrap {
+      margin-bottom: 1.25rem;
+    }
+
+    /* Instant Feedback box */
+    .feedback-box {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      display: none;
+    }
+    .feedback-box.correct {
+      display: block;
+      background: rgba(46, 125, 50, 0.12);
+      border: 1px solid #2e7d32;
+      color: var(--text);
+    }
+    .feedback-box.wrong {
+      display: block;
+      background: rgba(211, 47, 47, 0.12);
+      border: 1px solid #d32f2f;
+      color: var(--text);
+    }
+
+    /* Results Screen */
+    .results-hero {
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+    .results-score-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 4px solid var(--primary);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .results-pct {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Michroma', sans-serif;
+    }
+    .results-xp-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      background: rgba(46, 125, 50, 0.15);
+      border: 1px solid #81c784;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-bottom: 1rem;
+    }
+    .weak-topics-box {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin: 1.25rem 0;
+      text-align: left;
+    }
+    .weak-topic-pill {
+      display: inline-block;
+      background: rgba(211, 47, 47, 0.12);
+      border: 1px solid #d32f2f;
+      color: #d32f2f;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin: 0.2rem;
+    }
+
+    /* Mistakes Card */
+    .mistake-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: var(--surface);
+    }
+    .mistake-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .mistake-xp-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #2e7d32;
+      background: rgba(46, 125, 50, 0.12);
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid #81c784;
+    }
+
+    /* Item Card for Notes & History */
+    .item-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      background: var(--surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .item-card:hover {
+      border-color: var(--primary);
+    }
+    .item-info {
+      flex: 1;
+    }
+    .item-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+    .item-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--border);
@@ -628,6 +971,17 @@
           </button>
         </li>
         <li>
+          <button class="tab-btn" id="tab-mistakes" onclick="switchTab('mistakes')">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Mistakes Bank
+            <span class="mistakes-counter" id="nav-mistakes-cnt" style="display:none;">0</span>
+          </button>
+        </li>
+        <li>
           <button class="tab-btn" id="tab-notes" onclick="switchTab('notes')">
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -648,6 +1002,27 @@
       </ul>
 
       <div class="nav-actions">
+                <!-- Gamification HUD: Streaks, XP, Level -->
+        <div class="gamify-hud">
+          <div class="hud-badge hud-streak" id="badge-streak" title="Daily Quiz Streak: Take daily quizzes to maintain your streak!">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="#e65100">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span id="hud-streak-count">0d Streak</span>
+          </div>
+
+          <div class="hud-badge hud-xp" id="badge-xp" title="Total XP Earned">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="#2e7d32">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span id="hud-xp-count">0 XP</span>
+          </div>
+
+          <div class="hud-badge hud-level" id="badge-level" title="Your Study Rank">
+            <span id="hud-level-count">Lv 1</span>
+          </div>
+        </div>
+
         <!-- Light / Dark Mode Toggle Button -->
         <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Toggle light or dark theme" title="Toggle theme">
           <svg class="icon theme-icon-sun" viewBox="0 0 24 24">
@@ -962,6 +1337,148 @@
     </section>
   </main>
 
+  
+    <!-- VIEW 4: MISTAKES BANK (REVISIT MISTAKES TO EARN XP) -->
+    <section id="view-mistakes" class="view-tab">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h2 style="font-size: 1.1rem; font-weight: 400;">Mistakes Bank</h2>
+            <p style="color: var(--text-muted); font-size: 0.825rem;">Revisit questions you got wrong, answer them correctly, and earn <strong>+15 XP</strong> per solved mistake!</p>
+          </div>
+          <button class="btn-outline" onclick="loadMistakes()">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh Bank
+          </button>
+        </div>
+        <div id="mistakes-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="icon-md" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <h3>No mistakes to review!</h3>
+            <p>You have resolved all previous mistakes or haven't missed any questions yet. Great job!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE QUIZ RUNNER MODAL -->
+    <div id="quiz-modal-overlay" class="quiz-overlay">
+      <div class="quiz-modal">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="modal-title" id="runner-title">Active Recall Quiz</span>
+            <span class="concept-tag" id="runner-qnum" style="margin: 0;">1 of 5</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div id="runner-timer" class="timer-badge">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span id="timer-text">30s</span>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeQuizModal()" title="Exit Quiz">
+              <svg class="icon" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="quiz-progress-bar-wrap">
+          <div class="quiz-progress-fill" id="runner-progress-fill"></div>
+        </div>
+
+        <!-- Question View Container -->
+        <div class="modal-body" id="runner-question-container">
+          <span class="concept-tag" id="runner-concept">Topic</span>
+          <div class="question-stem" id="runner-stem">Question text goes here...</div>
+
+          <!-- Multiple choice choices -->
+          <div id="runner-options" class="options-grid"></div>
+
+          <!-- Fill in the blank box -->
+          <div id="runner-blank-wrap" class="blank-input-wrap" style="display: none;">
+            <input type="text" id="runner-blank-input" class="input-field" placeholder="Type your answer here..." autocomplete="off" />
+          </div>
+
+          <!-- Instant Feedback Reveal -->
+          <div id="runner-feedback" class="feedback-box">
+            <div id="feedback-msg" style="font-weight: 600; margin-bottom: 0.25rem;"></div>
+            <div id="feedback-explanation" style="font-size: 0.8rem; color: var(--text-muted);"></div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem; gap: 0.5rem;">
+            <button type="button" id="btn-submit-answer" class="btn-primary" onclick="submitCurrentAnswer()">
+              <span>Confirm Answer</span>
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <button type="button" id="btn-next-question" class="btn-primary" onclick="nextQuestion()" style="display: none;">
+              <span>Next Question</span>
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Final Summary View Container -->
+        <div class="modal-body" id="runner-summary-container" style="display: none;">
+          <div class="results-hero">
+            <div class="results-score-circle">
+              <span class="results-pct" id="summary-pct">80%</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);" id="summary-score-count">4 / 5</span>
+            </div>
+            <h3 id="summary-headline">Quiz Completed!</h3>
+            
+            <div class="results-xp-banner" id="summary-xp-banner">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" fill="#2e7d32">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span id="summary-xp-text">+40 XP Earned</span>
+            </div>
+
+            <!-- Weak Topics Section -->
+            <div class="weak-topics-box" id="summary-weak-box">
+              <div style="font-weight: 600; font-size: 0.88rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" stroke="#d32f2f">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                </svg>
+                Areas to Review (Weak Topics)
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">These concepts had missed questions and have been added to your Mistakes Bank:</p>
+              <div id="summary-weak-pills"></div>
+            </div>
+
+            <!-- Action buttons: Retry Missed Questions or Finish -->
+            <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem;">
+              <button type="button" class="btn-primary" id="btn-smart-retry" onclick="smartRetryMistakes()" style="display: none; background: #e65100; border-color: #ef6c00;">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>Retry Missed Questions</span>
+              </button>
+              <button type="button" class="btn-outline" onclick="closeQuizModal()">
+                Close & Return
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   <!-- Minimal Footer -->
   <footer>
     <div class="footer-inner">
@@ -1183,7 +1700,518 @@
       console.log('Quiz input:', { title, content, questionType, count, timer });
     }
 
+    
+    // GAMIFICATION & QUIZ RUNNER STATE
+    let currentQuizData = null;
+    let currentQuestionIdx = 0;
+    let userAnswers = {}; // question_id -> string
+    let currentTimerSeconds = 30;
+    let timerRemaining = 30;
+    let timerInterval = null;
+    let quizStartTime = null;
+    let lastSubmitData = null;
+
+    // Load Gamification Profile (Streaks, XP, Level, Unresolved Mistakes)
+    function refreshProfile() {
+      fetch('/api/profile')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.ok) return;
+          
+          // Streak
+          const streakEl = document.getElementById('hud-streak-count');
+          if (streakEl) streakEl.textContent = `${data.current_streak}d Streak`;
+
+          // XP
+          const xpEl = document.getElementById('hud-xp-count');
+          if (xpEl) xpEl.textContent = `${data.total_xp} XP`;
+
+          // Level
+          const lvlEl = document.getElementById('hud-level-count');
+          if (lvlEl) lvlEl.textContent = `Lv ${data.level}`;
+
+          // Mistakes badge
+          const mistakesBadge = document.getElementById('nav-mistakes-cnt');
+          if (mistakesBadge) {
+            if (data.unresolved_mistakes > 0) {
+              mistakesBadge.textContent = data.unresolved_mistakes;
+              mistakesBadge.style.display = 'inline-flex';
+            } else {
+              mistakesBadge.style.display = 'none';
+            }
+          }
+        })
+        .catch(err => console.error('Error fetching profile:', err));
+    }
+
+    // Tab Switching Enhanced
+    const origSwitchTab = switchTab;
+    switchTab = function(tab) {
+      origSwitchTab(tab);
+      if (tab === 'notes') loadSavedNotes();
+      if (tab === 'history') loadHistory();
+      if (tab === 'mistakes') loadMistakes();
+    };
+
+    // GENERATE QUIZ
+    function handleGenerateQuiz(event) {
+      if (event) event.preventDefault();
+      const title = document.getElementById('note-title').value.trim() || 'Study Quiz';
+      const content = document.getElementById('notes-content').value.trim();
+      const questionType = document.getElementById('question-type').value;
+      const count = parseInt(document.getElementById('question-count').value, 10);
+      const timer = parseInt(document.getElementById('timer-setting').value, 10);
+
+      if (!content) {
+        alert('Please paste some notes or upload a document before generating a quiz.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-generate');
+      const origText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Extracting Concepts...</span>';
+
+      fetch('/api/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          content,
+          question_type: questionType,
+          count,
+          timer_seconds: timer
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) {
+          alert(data.error || 'Failed to generate quiz.');
+          return;
+        }
+        startQuizRunner(data);
+      })
+      .catch(err => {
+        console.error('Quiz creation error:', err);
+        alert('Failed to connect to backend.');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+      });
+    }
+
+    // START QUIZ RUNNER
+    function startQuizRunner(quizData) {
+      currentQuizData = quizData;
+      currentQuestionIdx = 0;
+      userAnswers = {};
+      currentTimerSeconds = quizData.timer_seconds;
+      quizStartTime = Date.now();
+
+      document.getElementById('runner-title').textContent = quizData.title || 'Active Recall Quiz';
+      document.getElementById('runner-question-container').style.display = 'block';
+      document.getElementById('runner-summary-container').style.display = 'none';
+      document.getElementById('quiz-modal-overlay').classList.add('active');
+
+      renderCurrentQuestion();
+    }
+
+    function renderCurrentQuestion() {
+      clearInterval(timerInterval);
+
+      const questions = currentQuizData.questions;
+      if (currentQuestionIdx >= questions.length) {
+        finishAndSubmitQuiz();
+        return;
+      }
+
+      const q = questions[currentQuestionIdx];
+      const total = questions.length;
+
+      // Update counters & progress
+      document.getElementById('runner-qnum').textContent = `${currentQuestionIdx + 1} of ${total}`;
+      const pct = ((currentQuestionIdx) / total) * 100;
+      document.getElementById('runner-progress-fill').style.width = `${pct}%`;
+
+      document.getElementById('runner-concept').textContent = q.concept || 'General';
+      document.getElementById('runner-stem').textContent = q.question_text;
+
+      // Reset Feedback and buttons
+      const fbBox = document.getElementById('runner-feedback');
+      fbBox.style.display = 'none';
+      fbBox.className = 'feedback-box';
+      document.getElementById('btn-submit-answer').style.display = 'inline-flex';
+      document.getElementById('btn-next-question').style.display = 'none';
+
+      // Setup choices / input
+      const optContainer = document.getElementById('runner-options');
+      const blankWrap = document.getElementById('runner-blank-wrap');
+      const blankInput = document.getElementById('runner-blank-input');
+
+      optContainer.innerHTML = '';
+      blankInput.value = '';
+
+      if (q.question_type === 'mcq' && q.options && q.options.length > 0) {
+        optContainer.style.display = 'flex';
+        blankWrap.style.display = 'none';
+
+        q.options.forEach((opt) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'option-btn';
+          btn.textContent = opt;
+          btn.onclick = () => {
+            optContainer.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            userAnswers[q.id] = opt;
+          };
+          optContainer.appendChild(btn);
+        });
+      } else {
+        // Fill-in-the-blank
+        optContainer.style.display = 'none';
+        blankWrap.style.display = 'block';
+        blankInput.focus();
+        blankInput.oninput = (e) => {
+          userAnswers[q.id] = e.target.value.trim();
+        };
+        blankInput.onkeydown = (e) => {
+          if (e.key === 'Enter') submitCurrentAnswer();
+        };
+      }
+
+      // Timer Setup
+      const timerBadge = document.getElementById('runner-timer');
+      const timerText = document.getElementById('timer-text');
+
+      if (currentTimerSeconds > 0) {
+        timerBadge.style.display = 'inline-flex';
+        timerBadge.classList.remove('urgent');
+        timerRemaining = currentTimerSeconds;
+        timerText.textContent = `${timerRemaining}s`;
+
+        timerInterval = setInterval(() => {
+          timerRemaining--;
+          timerText.textContent = `${timerRemaining}s`;
+          if (timerRemaining <= 5) {
+            timerBadge.classList.add('urgent');
+          }
+          if (timerRemaining <= 0) {
+            clearInterval(timerInterval);
+            // Auto submit when time runs out
+            submitCurrentAnswer(true);
+          }
+        }, 1000);
+      } else {
+        timerBadge.style.display = 'none';
+      }
+    }
+
+    // SUBMIT CURRENT QUESTION (INSTANT FEEDBACK)
+    function submitCurrentAnswer(timedOut = false) {
+      clearInterval(timerInterval);
+      const q = currentQuizData.questions[currentQuestionIdx];
+      let userAns = userAnswers[q.id] || '';
+
+      if (q.question_type === 'fill_blank') {
+        userAns = document.getElementById('runner-blank-input').value.trim();
+        userAnswers[q.id] = userAns;
+      }
+
+      // Lock buttons
+      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+      document.getElementById('runner-blank-input').disabled = true;
+
+      // Reveal Instant Explanation Feedback
+      const fbBox = document.getElementById('runner-feedback');
+      const fbMsg = document.getElementById('feedback-msg');
+      const fbExp = document.getElementById('feedback-explanation');
+
+      fbMsg.textContent = timedOut ? 'Time is up! Moving forward.' : 'Answer Recorded!';
+      fbExp.textContent = q.explanation || 'Review the source concept to reinforce your active recall.';
+      fbBox.className = 'feedback-box correct';
+      fbBox.style.display = 'block';
+
+      document.getElementById('btn-submit-answer').style.display = 'none';
+      document.getElementById('btn-next-question').style.display = 'inline-flex';
+    }
+
+    function nextQuestion() {
+      currentQuestionIdx++;
+      document.getElementById('runner-blank-input').disabled = false;
+      renderCurrentQuestion();
+    }
+
+    // FINISH AND SUBMIT QUIZ
+    function finishAndSubmitQuiz(isRetry = false) {
+      clearInterval(timerInterval);
+      const timeSpent = Math.round((Date.now() - (quizStartTime || Date.now())) / 1000);
+
+      fetch(`/api/quiz/${currentQuizData.quiz_id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: userAnswers,
+          time_spent_seconds: timeSpent,
+          is_retry: isRetry
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) {
+          alert(data.error || 'Failed to submit quiz.');
+          return;
+        }
+        lastSubmitData = data;
+        showQuizSummary(data);
+        refreshProfile();
+      })
+      .catch(err => {
+        console.error('Quiz submit error:', err);
+        alert('Could not submit quiz results.');
+      });
+    }
+
+    // SHOW SUMMARY & WEAK TOPICS
+    function showQuizSummary(data) {
+      document.getElementById('runner-question-container').style.display = 'none';
+      document.getElementById('runner-summary-container').style.display = 'block';
+      document.getElementById('runner-progress-fill').style.width = '100%';
+
+      document.getElementById('summary-pct').textContent = `${data.percentage}%`;
+      document.getElementById('summary-score-count').textContent = `${data.score} / ${data.total}`;
+
+      // XP text
+      const earnedXp = data.gamification.xp_earned + data.gamification.streak_bonus_xp;
+      let xpMsg = `+${earnedXp} XP Earned!`;
+      if (data.gamification.streak_bonus_xp > 0) {
+        xpMsg += ` (+${data.gamification.streak_bonus_xp} Daily Streak Bonus)`;
+      }
+      document.getElementById('summary-xp-text').textContent = xpMsg;
+
+      // Weak topics
+      const weakBox = document.getElementById('summary-weak-box');
+      const weakPills = document.getElementById('summary-weak-pills');
+      const retryBtn = document.getElementById('btn-smart-retry');
+
+      if (data.weak_topics && data.weak_topics.length > 0) {
+        weakBox.style.display = 'block';
+        weakPills.innerHTML = data.weak_topics.map(t => `<span class="weak-topic-pill">${t}</span>`).join('');
+        retryBtn.style.display = 'inline-flex';
+      } else {
+        weakBox.style.display = 'none';
+        retryBtn.style.display = 'none';
+        document.getElementById('summary-headline').textContent = 'Perfect Score! 100%';
+      }
+    }
+
+    // SMART RETRY: RETRY ONLY MISSED QUESTIONS
+    function smartRetryMistakes() {
+      if (!lastSubmitData || !lastSubmitData.results) return;
+
+      const missed = lastSubmitData.results.filter(r => !r.is_correct);
+      if (missed.length === 0) {
+        alert('No missed questions to retry!');
+        return;
+      }
+
+      // Filter currentQuizData questions down to only missed
+      const missedIds = new Set(missed.map(m => m.question_id));
+      const retryQuestions = currentQuizData.questions.filter(q => missedIds.has(q.id));
+
+      currentQuizData.questions = retryQuestions;
+      currentQuestionIdx = 0;
+      userAnswers = {};
+      quizStartTime = Date.now();
+
+      document.getElementById('runner-question-container').style.display = 'block';
+      document.getElementById('runner-summary-container').style.display = 'none';
+      renderCurrentQuestion();
+    }
+
+    function closeQuizModal() {
+      clearInterval(timerInterval);
+      document.getElementById('quiz-modal-overlay').classList.remove('active');
+      refreshProfile();
+    }
+
+    // MISTAKES BANK: LOAD AND RESOLVE FOR +15 XP
+    function loadMistakes() {
+      const container = document.getElementById('mistakes-list');
+      fetch('/api/mistakes')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.ok || !data.mistakes || data.mistakes.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg class="icon-md" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <h3>No mistakes in your bank!</h3>
+                <p>You have resolved all previous mistakes. Great job staying ahead!</p>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = data.mistakes.map(m => `
+            <div class="mistake-card" id="mistake-card-${m.id}">
+              <div class="mistake-header">
+                <span class="concept-tag" style="margin: 0;">${m.concept}</span>
+                <span class="mistake-xp-pill">+15 XP upon solving</span>
+              </div>
+              <div style="font-weight: 600; margin: 0.5rem 0; font-size: 0.95rem;">${m.question_text}</div>
+              <div style="font-size: 0.8rem; color: #d32f2f; margin-bottom: 0.75rem;">
+                Your previous answer: <em>"${m.user_wrong_answer || 'None'}"</em>
+              </div>
+              
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="mistake-input-${m.id}" class="input-field" placeholder="Enter correct answer..." style="max-width: 320px;" />
+                <button type="button" class="btn-primary" onclick="resolveMistake(${m.id})">
+                  <span>Solve & Earn 15 XP</span>
+                </button>
+              </div>
+              <div id="mistake-feedback-${m.id}" style="margin-top: 0.5rem; font-size: 0.82rem; display: none;"></div>
+            </div>
+          `).join('');
+        })
+        .catch(err => console.error('Error loading mistakes:', err));
+    }
+
+    function resolveMistake(mistakeId) {
+      const input = document.getElementById(`mistake-input-${mistakeId}`);
+      const val = input.value.trim();
+      if (!val) {
+        alert('Please type your revised answer.');
+        return;
+      }
+
+      fetch('/api/mistakes/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mistake_id: mistakeId,
+          user_answer: val
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const fb = document.getElementById(`mistake-feedback-${mistakeId}`);
+        fb.style.display = 'block';
+
+        if (data.is_correct) {
+          fb.style.color = '#2e7d32';
+          fb.innerHTML = `<strong>${data.message}</strong><br><span style="color:var(--text-muted);">${data.explanation}</span>`;
+          refreshProfile();
+          setTimeout(() => {
+            const card = document.getElementById(`mistake-card-${mistakeId}`);
+            if (card) card.remove();
+            refreshProfile();
+          }, 1800);
+        } else {
+          fb.style.color = '#d32f2f';
+          fb.innerHTML = `<strong>${data.message}</strong><br><span style="color:var(--text-muted);">${data.explanation}</span>`;
+        }
+      })
+      .catch(err => console.error('Error resolving mistake:', err));
+    }
+
+    // SAVED NOTES TAB
+    function loadSavedNotes() {
+      const container = document.getElementById('saved-notes-list');
+      fetch('/api/notes')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.ok || !data.notes || data.notes.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg class="icon-md" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                </div>
+                <h3>No saved notes</h3>
+                <p>Paste notes on the Create tab to generate quizzes and store them here.</p>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = data.notes.map(n => `
+            <div class="item-card">
+              <div class="item-info">
+                <div class="item-title">${n.title}</div>
+                <div class="item-meta">${n.word_count || 0} words &bull; ${n.created_at || 'Recently'}</div>
+              </div>
+              <button class="btn-outline" onclick="loadNoteIntoEditor(${n.id})">
+                Use Note
+              </button>
+            </div>
+          `).join('');
+        })
+        .catch(err => console.error('Error loading notes:', err));
+    }
+
+    function loadNoteIntoEditor(noteId) {
+      fetch('/api/notes')
+        .then(res => res.json())
+        .then(data => {
+          const note = data.notes.find(n => n.id === noteId);
+          if (note) {
+            document.getElementById('note-title').value = note.title;
+            document.getElementById('notes-content').value = note.content;
+            updateWordCount();
+            switchTab('create');
+          }
+        });
+    }
+
+    // HISTORY TAB
+    function loadHistory() {
+      const container = document.getElementById('quiz-history-list');
+      fetch('/api/history')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.ok || !data.history || data.history.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <svg class="icon-md" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <h3>No quiz attempts recorded</h3>
+                <p>Completed quiz results and performance diagnostics will appear here.</p>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = data.history.map(h => `
+            <div class="item-card">
+              <div class="item-info">
+                <div class="item-title">${h.quiz_title || 'Active Recall Quiz'} ${h.is_retry ? '<span class="concept-tag" style="color:#e65100;">Retry</span>' : ''}</div>
+                <div class="item-meta">
+                  Score: <strong>${h.score}/${h.total} (${h.percentage}%)</strong> &bull; +${h.xp_earned} XP &bull; ${h.created_at || 'Recently'}
+                </div>
+                ${h.weak_topics && h.weak_topics.length > 0 ? `
+                  <div style="margin-top: 0.35rem;">
+                    ${h.weak_topics.map(t => `<span class="weak-topic-pill">${t}</span>`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+              <span class="hud-badge ${h.percentage >= 70 ? 'hud-xp' : 'hud-streak'}">
+                ${h.percentage}%
+              </span>
+            </div>
+          `).join('');
+        })
+        .catch(err => console.error('Error loading history:', err));
+    }
+
+    // Initialize Health & Gamification profile on startup
     checkHealth();
+    refreshProfile();
+
   </script>
 </body>
 </html>
