@@ -275,6 +275,103 @@
       box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
     }
 
+    /* User Auth Header & Chip */
+    .auth-btn {
+      height: 34px;
+      padding: 0 0.9rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+    .auth-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      height: 34px;
+      padding: 0 0.5rem 0 0.25rem;
+      border-radius: 999px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .user-avatar-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .user-name-text {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-logout-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px;
+      border-radius: 50%;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    .btn-logout-icon:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-subtle);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.55rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .auth-tab-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
     /* Layout */
     main {
       flex: 1;
@@ -1191,10 +1288,20 @@
           </svg>
         </button>
 
-        <!-- Backend Health Status -->
-        <div class="status-badge" id="backend-status">
-          <span class="status-dot"></span>
-          <span id="status-label">Checking...</span>
+        <!-- User Auth Button / Profile Chip -->
+        <div id="auth-header-wrap">
+          <button class="auth-btn" id="auth-login-btn" onclick="openAuthModal('login')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Log In</span>
+          </button>
+          
+          <div class="user-chip" id="auth-user-chip" style="display: none;">
+            <div class="user-avatar-badge" id="user-avatar-initial">U</div>
+            <span class="user-name-text" id="user-display-name">User</span>
+            <button type="button" class="btn-logout-icon" onclick="handleLogout()" title="Log Out">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1204,13 +1311,7 @@
     <!-- VIEW 1: CREATE QUIZ (LANDING) -->
     <section id="view-create" class="view-tab active">
       <div class="hero">
-        <div class="hero-meta">
-          <svg class="icon icon-sm" viewBox="0 0 24 24">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-          Active Recall Generator
-        </div>
+
         <h1>Generate Quizzes from Notes</h1>
         <p>Turn notes, PDF documents, Word files, or Excel spreadsheets into interactive multiple-choice and fill-in-the-blank questions with automated weak topic analysis.</p>
       </div>
@@ -1518,6 +1619,47 @@
     </section>
   </main>
 
+    <!-- AUTHENTICATION MODAL (LOGIN & SIGN UP) -->
+    <div id="auth-modal-overlay" class="quiz-overlay" onclick="if(event.target===this)closeAuthModal()">
+      <div class="quiz-modal" style="max-width: 420px; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2 id="auth-modal-title" style="font-size: 1.35rem; font-weight: 700; margin: 0;">Welcome to Quizzy</h2>
+          <button type="button" class="modal-close-btn" onclick="closeAuthModal()" title="Close">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <!-- Auth Mode Switcher Tabs -->
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab-btn active" id="auth-tab-login" onclick="setAuthMode('login')">Log In</button>
+          <button type="button" class="auth-tab-btn" id="auth-tab-register" onclick="setAuthMode('register')">Sign Up</button>
+        </div>
+
+        <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+          <div id="auth-error-msg" style="display: none; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 1rem; background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #ef4444;"></div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="auth-username" style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">Username</label>
+            <input type="text" id="auth-username" class="input-field" placeholder="Enter your username" required autocomplete="username" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="auth-password" style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">Password</label>
+            <input type="password" id="auth-password" class="input-field" placeholder="Enter your password" required autocomplete="current-password" />
+          </div>
+
+          <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+            <span id="auth-submit-label">Log In</span>
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted);">
+          <span id="auth-switch-prompt">Don't have an account?</span>
+          <a href="#" id="auth-switch-link" onclick="toggleAuthMode(); return false;" style="color: #6366f1; font-weight: 600; margin-left: 0.25rem; text-decoration: none;">Sign Up</a>
+        </div>
+      </div>
+    </div>
+
     <!-- INTERACTIVE QUIZ RUNNER MODAL -->
     <div id="quiz-modal-overlay" class="quiz-overlay">
       <div class="quiz-modal">
@@ -1703,6 +1845,160 @@
   </footer>
 
   <script>
+
+    // AUTHENTICATION LOGIC
+    let currentAuthMode = 'login'; // 'login' or 'register'
+
+    function openAuthModal(mode = 'login') {
+      setAuthMode(mode);
+      const modal = document.getElementById('auth-modal-overlay');
+      if (modal) modal.classList.add('active');
+      const input = document.getElementById('auth-username');
+      if (input) setTimeout(() => input.focus(), 100);
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal-overlay');
+      if (modal) modal.classList.remove('active');
+      const err = document.getElementById('auth-error-msg');
+      if (err) err.style.display = 'none';
+      const form = document.getElementById('auth-form');
+      if (form) form.reset();
+    }
+
+    function setAuthMode(mode) {
+      currentAuthMode = mode;
+      const tabLogin = document.getElementById('auth-tab-login');
+      const tabReg = document.getElementById('auth-tab-register');
+      const submitLabel = document.getElementById('auth-submit-label');
+      const switchPrompt = document.getElementById('auth-switch-prompt');
+      const switchLink = document.getElementById('auth-switch-link');
+      const modalTitle = document.getElementById('auth-modal-title');
+      const err = document.getElementById('auth-error-msg');
+      if (err) err.style.display = 'none';
+
+      if (mode === 'register') {
+        if (tabLogin) tabLogin.classList.remove('active');
+        if (tabReg) tabReg.classList.add('active');
+        if (submitLabel) submitLabel.textContent = 'Create Account';
+        if (switchPrompt) switchPrompt.textContent = 'Already have an account?';
+        if (switchLink) switchLink.textContent = 'Log In';
+        if (modalTitle) modalTitle.textContent = 'Join Quizzy';
+      } else {
+        if (tabLogin) tabLogin.classList.add('active');
+        if (tabReg) tabReg.classList.remove('active');
+        if (submitLabel) submitLabel.textContent = 'Log In';
+        if (switchPrompt) switchPrompt.textContent = "Don't have an account?";
+        if (switchLink) switchLink.textContent = 'Sign Up';
+        if (modalTitle) modalTitle.textContent = 'Welcome to Quizzy';
+      }
+    }
+
+    function toggleAuthMode() {
+      setAuthMode(currentAuthMode === 'login' ? 'register' : 'login');
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('auth-username');
+      const passwordInput = document.getElementById('auth-password');
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const submitLabel = document.getElementById('auth-submit-label');
+      const err = document.getElementById('auth-error-msg');
+
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value.trim() : '';
+
+      if (!username || !password) {
+        if (err) {
+          err.textContent = 'Please fill in both fields.';
+          err.style.display = 'block';
+        }
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitLabel) submitLabel.textContent = currentAuthMode === 'register' ? 'Creating…' : 'Logging in…';
+      if (err) err.style.display = 'none';
+
+      const endpoint = currentAuthMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (submitBtn) submitBtn.disabled = false;
+        setAuthMode(currentAuthMode);
+
+        if (!data.ok) {
+          if (err) {
+            err.textContent = data.error || 'Authentication failed. Please check your credentials.';
+            err.style.display = 'block';
+          }
+          return;
+        }
+
+        // Success!
+        closeAuthModal();
+        updateAuthUI(data.user);
+        checkAuthStatus();
+    refreshProfile();
+      })
+      .catch(() => {
+        if (submitBtn) submitBtn.disabled = false;
+        setAuthMode(currentAuthMode);
+        if (err) {
+          err.textContent = 'Network error. Please try again.';
+          err.style.display = 'block';
+        }
+      });
+    }
+
+    function updateAuthUI(user) {
+      const loginBtn = document.getElementById('auth-login-btn');
+      const userChip = document.getElementById('auth-user-chip');
+      const userNameDisplay = document.getElementById('user-display-name');
+      const userAvatar = document.getElementById('user-avatar-initial');
+
+      if (user && user.username) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userChip) userChip.style.display = 'inline-flex';
+        if (userNameDisplay) userNameDisplay.textContent = user.username;
+        if (userAvatar) userAvatar.textContent = user.username.charAt(0).toUpperCase();
+      } else {
+        if (loginBtn) loginBtn.style.display = 'inline-flex';
+        if (userChip) userChip.style.display = 'none';
+      }
+    }
+
+    function checkAuthStatus() {
+      fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok && data.logged_in && data.user) {
+            updateAuthUI(data.user);
+          } else {
+            updateAuthUI(null);
+          }
+        })
+        .catch(() => updateAuthUI(null));
+    }
+
+    function handleLogout() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => {
+          updateAuthUI(null);
+          refreshProfile();
+        })
+        .catch(() => {
+          updateAuthUI(null);
+          refreshProfile();
+        });
+    }
+
     // Theme Toggle Logic
     function getStoredTheme() {
       const stored = localStorage.getItem('quizzy-theme');
@@ -1783,6 +2079,7 @@
     function checkHealth() {
       const statusWrap = document.getElementById('backend-status');
       const statusLabel = document.getElementById('status-label');
+      if (!statusWrap || !statusLabel) return;
 
       fetch('/api/health')
         .then(res => {

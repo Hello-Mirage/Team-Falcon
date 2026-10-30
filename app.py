@@ -34,12 +34,14 @@ def _load_env_fallback():
 
 _load_env_fallback()
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from extractor import extract_text_from_file
 from quiz_generator import generate_quiz_from_notes
 from gemini_generator import generate_quiz_with_gemini, is_ai_available, get_ai_status
 
 app = Flask(__name__, static_folder="static")
+app.secret_key = os.environ.get("SECRET_KEY", "quizzy-super-secret-auth-key-2026")
 DB_PATH = os.path.join(app.root_path, "data.db")
 
 
@@ -72,6 +74,19 @@ def init_db():
                 last_active_date TEXT,
                 mistakes_solved_count INTEGER DEFAULT 0,
                 quizzes_completed INTEGER DEFAULT 0
+            );
+
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+                password_hash TEXT NOT NULL,
+                total_xp INTEGER DEFAULT 0,
+                current_streak INTEGER DEFAULT 0,
+                longest_streak INTEGER DEFAULT 0,
+                last_active_date TEXT,
+                mistakes_solved_count INTEGER DEFAULT 0,
+                quizzes_completed INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
             CREATE TABLE IF NOT EXISTS notes (
@@ -218,6 +233,93 @@ def home():
     return send_from_directory(app.root_path, "index.html")
 
 
+
+@app.post("/api/auth/register")
+def api_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not username or len(username) < 3:
+        return jsonify(ok=False, error="Username must be at least 3 characters."), 400
+    if len(username) > 30:
+        return jsonify(ok=False, error="Username cannot exceed 30 characters."), 400
+    if not password or len(password) < 4:
+        return jsonify(ok=False, error="Password must be at least 4 characters."), 400
+
+    password_hash = generate_password_hash(password)
+    try:
+        with db() as conn:
+            cursor = conn.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                (username, password_hash)
+            )
+            user_id = cursor.lastrowid
+            session["user_id"] = user_id
+            session["username"] = username
+            return jsonify(ok=True, user={"id": user_id, "username": username, "total_xp": 0, "current_streak": 0})
+    except sqlite3.IntegrityError:
+        return jsonify(ok=False, error="Username is already taken. Please choose another."), 409
+    except Exception as e:
+        return jsonify(ok=False, error=str(e)), 500
+
+
+@app.post("/api/auth/login")
+def api_login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if not username or not password:
+        return jsonify(ok=False, error="Please enter both username and password."), 400
+
+    with db() as conn:
+        user = conn.execute(
+            "SELECT id, username, password_hash, total_xp, current_streak FROM users WHERE username = ?",
+            (username,)
+        ).fetchone()
+
+        if not user or not check_password_hash(user["password_hash"], password):
+            return jsonify(ok=False, error="Invalid username or password."), 401
+
+        session["user_id"] = user["id"]
+        session["username"] = user["username"]
+        return jsonify(ok=True, user={
+            "id": user["id"],
+            "username": user["username"],
+            "total_xp": user["total_xp"],
+            "current_streak": user["current_streak"]
+        })
+
+
+@app.post("/api/auth/logout")
+def api_logout():
+    session.clear()
+    return jsonify(ok=True)
+
+
+@app.get("/api/auth/me")
+def api_auth_me():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify(ok=True, logged_in=False, user=None)
+
+    with db() as conn:
+        user = conn.execute(
+            "SELECT id, username, total_xp, current_streak, created_at FROM users WHERE id = ?",
+            (user_id,)
+        ).fetchone()
+        if not user:
+            session.clear()
+            return jsonify(ok=True, logged_in=False, user=None)
+
+        return jsonify(ok=True, logged_in=True, user={
+            "id": user["id"],
+            "username": user["username"],
+            "total_xp": user["total_xp"],
+            "current_streak": user["current_streak"]
+        })
+
 @app.get("/api/health")
 def health():
     ai_status = get_ai_status()
@@ -234,23 +336,46 @@ def api_ai_status():
 def api_profile():
     """Get player profile: Total XP, daily streak, mistakes count, and level stats."""
     with db() as conn:
+        user_id = session.get("user_id")
+        user = None
+        if user_id:
+            user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
         profile = conn.execute("SELECT * FROM user_profile WHERE id = 1").fetchone()
         unresolved_mistakes = conn.execute("SELECT COUNT(*) as cnt FROM mistakes_bank WHERE resolved = 0").fetchone()["cnt"]
         total_attempts = conn.execute("SELECT COUNT(*) as cnt FROM attempts").fetchone()["cnt"]
         
-        total_xp = profile["total_xp"]
+        if user:
+            total_xp = user["total_xp"]
+            current_streak = user["current_streak"]
+            longest_streak = user["longest_streak"]
+            last_active_date = user["last_active_date"]
+            mistakes_solved = user["mistakes_solved_count"]
+            quizzes_completed = user["quizzes_completed"]
+            username = user["username"]
+        else:
+            total_xp = profile["total_xp"]
+            current_streak = profile["current_streak"]
+            longest_streak = profile["longest_streak"]
+            last_active_date = profile["last_active_date"]
+            mistakes_solved = profile["mistakes_solved_count"]
+            quizzes_completed = profile["quizzes_completed"]
+            username = None
+
         level = (total_xp // 100) + 1
         level_progress = total_xp % 100
         
         return jsonify({
             "ok": True,
+            "logged_in": bool(user),
+            "username": username,
             "total_xp": total_xp,
-            "current_streak": profile["current_streak"],
-            "longest_streak": profile["longest_streak"],
-            "last_active_date": profile["last_active_date"],
-            "mistakes_solved_count": profile["mistakes_solved_count"],
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "last_active_date": last_active_date,
+            "mistakes_solved_count": mistakes_solved,
             "unresolved_mistakes": unresolved_mistakes,
-            "quizzes_completed": profile["quizzes_completed"],
+            "quizzes_completed": quizzes_completed,
             "total_attempts": total_attempts,
             "level": level,
             "level_progress": level_progress
